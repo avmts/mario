@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super Mario Memory - Final Fix</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <audio id="bgMusic" loop><source src="audio/theme.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxPause"><source src="audio/pause.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxGameOver"><source src="audio/gameover.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxWin"><source src="audio/win.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxBowser"><source src="audio/bowser.mp3" type="audio/mpeg"></audio>
+    <audio id="sfx1up"><source src="audio/1up.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxStar"><source src="audio/powerfull.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxFireball"><source src="audio/fireball.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxBoo"><source src="audio/boo.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxFlip"><source src="audio/flip.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxStart"><source src="audio/start.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxSplat"><source src="audio/splat.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxKamek"><source src="audio/kamek.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxExplosion"><source src="audio/explosion.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxShyGuy"><source src="audio/shyguy.mp3" type="audio/mpeg"></audio>
+    <audio id="sfxSwish"><source src="audio/swish.mp3" type="audio/mpeg"></audio>
+
+    <div class="overlay" id="startMenu">
+        <div class="menu-box">
+            <h2 style="margin-top:0">CHOISIS TON NIVEAU</h2>
+            <button class="btn-level" onclick="openSelectionMenu('easy')">FACILE (5 Vies)</button>
+            <button class="btn-level" onclick="openSelectionMenu('medium')">MOYEN (10 Vies)</button>
+            <button class="btn-level" onclick="openSelectionMenu('hard')">DIFFICILE (15 Vies)</button>
+
+            <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
+                <button class="btn-level btn-custom" style="width: 48%; margin: 15px 0;" onclick="openCustomMenu()">🛠️ PERSO</button>
+                <button class="btn-level btn-skin" style="width: 48%; margin: 15px 0;" onclick="openSkinMenu()">🎨 SKINS</button>
+            </div>
+
+            <button class="btn-level btn-album" onclick="openAlbumMenu()">📒 ALBUM</button>
+
+            <button class="btn-level btn-reset" onclick="resetBestScores()">🗑️ EFFACER SCORES</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="albumMenu">
+        <div class="menu-box" style="max-width: 800px;">
+            <h2 style="margin-top:0; color:#FFD700;">ALBUM DE COLLECTION</h2>
+            <p id="albumProgress">Progression : 0 / 0</p>
+
+            <div class="album-grid" id="albumGrid">
+            </div>
+
+            <button class="btn-menu" style="background: #555; border-color: #999; margin-top: 20px;" onclick="goToMainMenu()">RETOUR</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="skinMenu">
+        <div class="menu-box">
+            <h2 style="margin-top:0; color:#049CD8;">DOS DES CARTES</h2>
+            <p>Choisis ton style :</p>
+
+            <div class="skin-grid">
+                <div class="skin-option" id="skin-block-option" onclick="selectSkin('skin-block')">
+                    <img src="images/block.png" alt="Bloc ?">
+                    <span>Classique</span>
+                </div>
+                <div class="skin-option" id="skin-pipe-option" onclick="selectSkin('skin-pipe')">
+                    <img src="images/pipe.png" alt="Tuyau">
+                    <span>Tuyau</span>
+                </div>
+                <div class="skin-option" id="skin-coin-option" onclick="selectSkin('skin-coin')">
+                    <img src="images/coin.png" alt="Pièce">
+                    <span>Pièce</span>
+                </div>
+                <div class="skin-option" id="skin-gold-option" onclick="selectSkin('skin-gold')">
+                    <img src="images/goldblock.png" alt="Or">
+                    <span>Bloc Or</span>
+                </div>
+            </div>
+
+            <button class="btn-menu" style="background: #555; border-color: #999; margin-top: 20px;" onclick="goToMainMenu()">RETOUR</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="customMenu">
+        <div class="menu-box">
+            <h2 style="margin-top:0; color:#9b59b6;">PARTIE PERSO</h2>
+
+            <div style="margin: 15px 0; text-align: left;">
+                <div class="custom-label"><span>Paires</span> <b id="customPairsVal">8</b></div>
+                <input type="range" id="customPairs" class="custom-range" min="2" max="39" value="8" oninput="document.getElementById('customPairsVal').innerText = this.value">
+            </div>
+
+            <div style="margin: 15px 0; text-align: left;">
+                <div class="custom-label"><span>Vies</span> <b id="customLivesVal">10</b></div>
+                <input type="range" id="customLives" class="custom-range" min="1" max="99" value="10" oninput="document.getElementById('customLivesVal').innerText = this.value">
+            </div>
+
+            <div style="margin: 15px 0; text-align: left;">
+                <div class="custom-label"><span>Temps</span> <b id="customTimeVal">60s</b></div>
+                <input type="range" id="customTime" class="custom-range" min="10" max="300" step="10" value="60" oninput="document.getElementById('customTimeVal').innerText = this.value + 's'">
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 10px;">
+                <button class="btn-menu" style="background: #555; border-color: #999; width: 40%;" onclick="goToMainMenu()">RETOUR</button>
+                <button class="btn-level btn-custom" style="width: 60%; margin: 10px 0;" onclick="setupCustomGame()">SUIVANT ➡</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="selectionMenu">
+        <div class="menu-box">
+            <h2 style="margin-top:0">CHOISIS TON ÉQUIPE</h2>
+            <p id="selectionTitle">Sélectionne 6 personnages</p>
+
+            <div class="select-container" id="selectionGrid"></div>
+
+            <p id="charDescription" class="char-description">Survole un personnage pour voir son effet.</p>
+
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button class="btn-menu" style="width: 150px; background: #555; border-color: #999;" onclick="goToMainMenu()">RETOUR</button>
+                <button class="btn-menu btn-deselect" style="width: 160px;" onclick="deselectAll()">❌ TOUT VIDER</button>
+                <button class="btn-menu btn-random" style="width: 180px;" onclick="randomSelection()">🎲 ALÉATOIRE</button>
+                <button id="btnStartGame" class="btn-menu btn-disabled" style="width: 150px;" onclick="confirmSelection()">JOUER !</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="countdownOverlay">
+        <div id="countdownText">3</div>
+    </div>
+
+    <div class="overlay" id="pauseMenu">
+        <div class="menu-box">
+            <h2 style="margin-top:0; color:#E52521">PAUSE</h2>
+            <button class="btn-menu" onclick="togglePause()">▶ REPRENDRE</button>
+            <button class="btn-menu" onclick="restartCurrentLevel()">RECOMMENCER</button>
+            <button class="btn-menu" onclick="goToMainMenu()">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="helpMenu">
+        <div class="menu-box" style="max-width: 600px; text-align: left;">
+            <h2 style="margin-top:0; color:#E52521; text-align: center;">GUIDE DES POUVOIRS</h2>
+
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/star.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #FBD000;">SUPER ÉTOILE :</strong> Révèle toutes les cartes pendant un court instant.</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/fireflower.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #ff4d4d;">FLEUR DE FEU :</strong> Lance une boule de feu qui trouve et valide une paire pour vous !</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/1up.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #44D62C;">1-UP :</strong> Vous gagnez une vie supplémentaire !</div>
+            </div>
+
+            <div style="display: flex; align-items: center; margin-bottom: 15px; border-top: 2px solid #555; padding-top: 15px;">
+                <img src="images/ghost.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #ccc;">BOO (PIÈGE):</strong> Hante l'écran et le rend flou jusqu'à votre prochain coup.</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/blooper.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #049CD8;">BLOOPER (PIÈGE) :</strong> Crache de l'encre sur l'écran pour cacher la vue !</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/kamek.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #3498db;">KAMEK (PIÈGE) :</strong> Utilise sa magie pour échanger la place de quelques cartes !</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/bowser.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #44D62C;">BOWSER (PIÈGE) :</strong> Le grand méchant ! Il mélange toutes les cartes restantes.</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/bobomb.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #ff3333;">BOB-OMB (PIÈGE) :</strong> N'y touchez pas ! Si vous trouvez la paire, elle explose et vous perdez 1 vie.</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/iceflower.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #00ffff;">FLEUR DE GLACE (PIÈGE) :</strong> Gèle l'écran et vous empêche de jouer, mais le chrono continue de tourner !</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/chainchomp.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #555;">CHOMP (PIÈGE) :</strong> Il mord le plateau et enchaîne plusieurs cartes pendant 10 secondes !</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/lightning.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #FFFF00;">ÉCLAIR (PIÈGE) :</strong> Un flash aveuglant rétrécit toutes les cartes, les rendant difficiles à cliquer !</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/poison.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #8A2BE2;">CHAMPI POISON (PIÈGE) :</strong> Un gaz toxique renverse tout votre écran à l'envers pendant 10 secondes !</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/shyguy.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #ff69b4;">MASKASS (PIÈGE) :</strong> Il effraie les cartes ! Elles fuient votre souris pendant 8 secondes.</div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="images/cherry.png" style="width: 50px; margin-right: 15px;">
+                <div><strong style="color: #ff69b4;">DOUBLE CERISE (PIÈGE) :</strong> Crée un clone de votre curseur pour vous embrouiller !</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-menu" onclick="toggleHelp()">J'AI COMPRIS !</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bowser-msg" id="bowserMsg">LES CARTES ONT ÉTÉ MÉLANGÉES !</div>
+
+    <h1>Super Mario Memory</h1>
+    <div class="info-panel">
+        <span class="info-item" style="position: relative;">
+            ⏰ <b id="timer">00</b>
+            <span id="timeBonusIndicator" class="bonus-indicator">+5s</span>
+        </span>
+        <span class="info-item" style="position: relative;">
+            ❤️ <b id="lives">0</b>
+            <span id="lifeBonusIndicator" class="bonus-indicator" style="color:#44D62C;">+1</span>
+        </span>
+        <span class="info-item">
+            ⭐ <b id="score">0</b>
+            <small>(<span id="multiplierDisplay">x1</span>)</small>
+        </span>
+        <span class="info-item">🏆 <b id="bestScore">0</b></span>
+
+        <div class="volume-control">
+            <button class="btn-mute" id="muteBtn" onclick="toggleMute()">🔉</button>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.3">
+        </div>
+
+        <button class="hud-btn btn-theme" id="themeBtn" onclick="toggleTheme()">🌗</button>
+        <button class="hud-btn" onclick="togglePause()">⏸ MENU</button>
+        <button class="hud-btn btn-theme" onclick="toggleHelp()">?</button>
+    </div>
+
+    <div class="memory-game" id="gameBoard"></div>
+
+    <div class="end-msg" id="winMessage" style="background: rgba(0,0,0,0.95);">
+        <div id="newRecordMsg" class="new-record-text">NOUVEAU RECORD !</div>
+        <h2 style="color: #FBD000;">VICTOIRE !</h2>
+        <div class="score-table">
+            <div class="score-row"><span>Paires & Combos :</span><span id="detailBase">0</span></div>
+            <div class="score-row"><span>Bonus Rapidité :</span><span id="detailTime">0</span></div>
+            <div class="score-row"><span>Bonus Survie :</span><span id="detailLife">0</span></div>
+            <div class="score-total"><span>TOTAL :</span><span id="finalScore">0</span></div>
+        </div>
+
+        <div id="albumUnlockMsg" style="color: #44D62C; font-weight: bold; margin: 10px 0; display: none;">
+            🎁 Nouveaux stickers débloqués dans l'album !
+        </div>
+
+        <button class="btn-level" onclick="goToMainMenu()">Menu Principal</button>
+        <button class="btn-level" onclick="restartCurrentLevel()">Rejouer</button>
+    </div>
+
+    <div class="end-msg" id="loseMessage" style="background: rgba(0,0,0,0.9);">
+        <h2 id="loseTitle" style="color: #ff4d4d;">GAME OVER</h2>
+        <p id="loseText" style="font-size: 1.5rem;">Bowser a gagné...</p>
+        <button class="btn-level" onclick="restartCurrentLevel()">Réessayer</button>
+        <button class="btn-level" onclick="goToMainMenu()">Menu Principal</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
