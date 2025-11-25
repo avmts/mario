@@ -1,4 +1,4 @@
-﻿/* --- STYLE GÉNÉRAL --- */
+/* --- STYLE GÉNÉRAL --- */
 :root {
     --bg-color: #5C94FC;
     --bg-line: #6C9FFC;
@@ -120,6 +120,16 @@ body.bowser-active {
         transform: rotateY(180deg) scale(0.9);
         opacity: 0.5;
     }
+}
+
+/* FIX: EMPÊCHER LE RE-JEU DE L'ANIMATION */
+.bomb-explode.static .front-face {
+    animation: none !important; /* Stop l'animation */
+    /* On force l'état final de l'animation pour garder l'aspect "explosé" */
+    transform: rotateY(180deg) scale(0.9);
+    opacity: 0.5;
+    background-color: #ff3333 !important;
+    border-color: #ff0000 !important;
 }
 
 /* EFFET FANTÔME */
@@ -449,7 +459,7 @@ input[type=range] {
         box-shadow: 0 2px 0 rgba(0,0,0,0.5);
     }
 
-/* OVERLAYS */
+/* --- OVERLAYS AVEC TRANSITION (CORRIGÉ) --- */
 .overlay {
     position: fixed;
     top: 0;
@@ -458,19 +468,23 @@ input[type=range] {
     height: 100%;
     background: rgba(0,0,0,0.9);
     z-index: 200;
-    display: flex;
+    /* On force display flex mais on cache avec opacity/visibility */
+    display: flex !important;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none; /* Empêche de cliquer quand caché */
 }
 
-#startMenu {
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-#pauseMenu, #helpMenu, #selectionMenu, #customMenu, #skinMenu, #albumMenu {
-    display: none;
-}
+    /* Quand la classe active est ajoutée par le JS, le menu apparaît */
+    .overlay.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
 
 .menu-box {
     background: white;
@@ -679,7 +693,9 @@ input[type=range] {
 /* Countdown */
 #countdownOverlay {
     background: rgba(0, 0, 0, 0.85);
-    display: none;
+    /* FIX BUG : On retire le display: none !important ici */
+    /* C'est la classe .overlay qui gère le display flex/none via opacité maintenant */
+    z-index: 300; /* S'assurer qu'il est au dessus des autres */
 }
 
 #countdownText {
@@ -726,6 +742,26 @@ input[type=range] {
     position: relative;
 }
 
+/* --- BARRE DE PROGRESSION --- */
+.progress-container {
+    width: 150px;
+    height: 20px;
+    background-color: rgba(0,0,0,0.3);
+    border: 2px solid white;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0 10px;
+    position: relative;
+}
+
+#progressBar {
+    width: 0%;
+    height: 100%;
+    /* Dégradé Jaune Mario -> Rouge Mario */
+    background: linear-gradient(90deg, #FBD000, #E52521);
+    transition: width 0.5s ease-out;
+}
+
 /* Animations */
 .shake {
     color: red;
@@ -752,6 +788,50 @@ input[type=range] {
     100% {
         transform: translate(0, 0);
     }
+}
+
+/* --- ANIMATION ERREUR (SHAKE CARTE) --- */
+@keyframes errorShake {
+    0%, 100% {
+        transform: translateX(0) rotateY(180deg);
+    }
+
+    20%, 60% {
+        transform: translateX(-5px) rotateY(180deg);
+    }
+
+    40%, 80% {
+        transform: translateX(5px) rotateY(180deg);
+    }
+}
+
+/* --- ANIMATION ERREUR POUR MODE TINY (Garde le scale 0.6) --- */
+@keyframes errorShakeTiny {
+    0%, 100% {
+        transform: scale(0.6) translateX(0) rotateY(180deg);
+    }
+
+    20%, 60% {
+        transform: scale(0.6) translateX(-8px) rotateY(180deg);
+    }
+
+    40%, 80% {
+        transform: scale(0.6) translateX(8px) rotateY(180deg);
+    }
+}
+
+.memory-card.error {
+    animation: errorShake 0.4s ease-in-out;
+}
+
+    /* MODIFICATION ICI : Cible .front-face pour appliquer la bordure et le halo */
+    .memory-card.error .front-face {
+        border-color: #ff3333 !important; /* Bordure Rouge */
+        box-shadow: 0 0 15px #ff3333; /* Glow rouge pour être bien visible */
+    }
+
+.tiny-cards .memory-card.error {
+    animation: errorShakeTiny 0.4s ease-in-out;
 }
 
 /* INDICATEURS BONUS HUD */
@@ -986,10 +1066,16 @@ input[type=range] {
 }
 
 /* FIX: Empêcher les cartes validées/retournées de bouger au survol (Stabilisation) */
-.memory-card.flip:hover,
+/* MODIFICATION ICI: On applique la stabilisation SEULEMENT si la carte n'est pas en erreur (not(.error)) */
+.memory-card.flip:not(.error):hover,
 .memory-card.matched:hover {
     transform: rotateY(180deg) !important;
     cursor: default;
+}
+
+/* FIX: Stabilisation spécifique pour le mode Tiny (sinon elles regrossissent au survol) */
+.tiny-cards .memory-card.flip:not(.error):hover {
+    transform: scale(0.6) rotateY(180deg) !important;
 }
 
 /* CURSEUR */
@@ -1253,14 +1339,15 @@ body.thunder-flash::before {
 }
 
 /* Rétrécissement des cartes */
+/* MODIFICATION ICI : Suppression du !important pour laisser la place aux animations */
 .tiny-cards .memory-card {
     transform: scale(0.6);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-    /* Si la carte est retournée, on garde la rotation ET le scale (Ici le !important est utile) */
+    /* MODIFICATION ICI : Suppression du !important */
     .tiny-cards .memory-card.flip {
-        transform: scale(0.6) rotateY(180deg) !important;
+        transform: scale(0.6) rotateY(180deg);
     }
 
 /* --- EFFET CHAMPI POISON (ROTATION + BROUILLARD VIOLET) --- */
@@ -1299,7 +1386,7 @@ body.poison-fog::after {
 
 .shyguy-mode .memory-card {
     /* Transition douce mais rapide pour que la fuite soit fluide */
-    transition: transform 0.2s ease-out;
+    transition: transform 0.1s linear !important;
     will-change: transform;
 }
 
