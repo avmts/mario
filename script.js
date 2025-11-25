@@ -1,4 +1,4 @@
-// LISTE COMPLETE AVEC LES NOUVEAUX PERSONNAGES
+// LISTE COMPLETE DES PERSONNAGES
 const characterNames = [
     'mario', 'luigi', 'peach', 'bowser', 'yoshi',
     'star', 'toad', 'wario', 'waluigi', 'dk',
@@ -11,6 +11,12 @@ const characterNames = [
 ];
 const allCharacters = characterNames.map(name => ({ name: name, img: `images/${name}.png` }));
 
+// --- CONSTANTES COULEURS PAR DÉFAUT ---
+const DEFAULT_COLORS = {
+    light: { main: '#5C94FC', line: '#6C9FFC' },
+    dark: { main: '#121212', line: '#1a1a1a' }
+};
+
 const gameBoard = document.getElementById('gameBoard');
 const timerDisplay = document.getElementById('timer');
 const livesDisplay = document.getElementById('lives');
@@ -21,6 +27,8 @@ const loseTitle = document.getElementById('loseTitle');
 const loseText = document.getElementById('loseText');
 const bonusIndicator = document.getElementById('timeBonusIndicator');
 const lifeBonusIndicator = document.getElementById('lifeBonusIndicator');
+
+// MENUS
 const startMenu = document.getElementById('startMenu');
 const customMenu = document.getElementById('customMenu');
 const selectionMenu = document.getElementById('selectionMenu');
@@ -29,11 +37,18 @@ const albumMenu = document.getElementById('albumMenu');
 const pauseMenu = document.getElementById('pauseMenu');
 const countdownOverlay = document.getElementById('countdownOverlay');
 const countdownText = document.getElementById('countdownText');
+
+// MENU FOND D'ECRAN
+const bgMenu = document.getElementById('bgMenu');
+const bgColorInput = document.getElementById('bgColorInput');
+const bgLineInput = document.getElementById('bgLineInput');
+
 const bowserMsg = document.getElementById('bowserMsg');
 const detailBase = document.getElementById('detailBase');
 const detailTime = document.getElementById('detailTime');
 const detailLife = document.getElementById('detailLife');
 
+// AUDIO
 const bgMusic = document.getElementById('bgMusic');
 const sfxPause = document.getElementById('sfxPause');
 const sfxGameOver = document.getElementById('sfxGameOver');
@@ -121,13 +136,10 @@ let targetPairCount = 0;
 // --- RESTAURATION DU VOLUME SAUVEGARDÉ ---
 const savedVolume = localStorage.getItem('mario_memory_volume');
 if (savedVolume !== null) {
-    // Si une valeur existe, on l'applique
     lastVolume = parseFloat(savedVolume);
-    // Si c'était mute (0), on garde 0, sinon on met la valeur
     bgMusic.volume = lastVolume;
     volumeSlider.value = lastVolume;
 } else {
-    // Sinon valeur par défaut
     bgMusic.volume = lastVolume;
 }
 updateMuteIcon(bgMusic.volume);
@@ -139,6 +151,7 @@ const levels = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Restauration du thème sombre/clair
     const savedTheme = localStorage.getItem('mario_memory_theme');
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
@@ -146,25 +159,33 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         themeBtn.innerText = "🌗";
     }
+
+    // Appliquer les couleurs de fond (intelligent)
+    applyCurrentThemeColors();
 });
 
 function toggleTheme() {
     document.body.classList.toggle('dark-mode');
-    if (document.body.classList.contains('dark-mode')) {
+
+    // Détection du mode actif pour la sauvegarde
+    const isDark = document.body.classList.contains('dark-mode');
+
+    if (isDark) {
         themeBtn.innerText = "☀️";
         localStorage.setItem('mario_memory_theme', 'dark');
     } else {
         themeBtn.innerText = "🌗";
         localStorage.setItem('mario_memory_theme', 'light');
     }
+
+    // Appliquer les couleurs correspondantes au mode (Custom ou Défaut)
+    applyCurrentThemeColors();
 }
 
 volumeSlider.addEventListener('input', function () {
     bgMusic.volume = this.value;
     updateMuteIcon(this.value);
     if (this.value > 0) lastVolume = this.value;
-
-    // SAUVEGARDE DU VOLUME
     localStorage.setItem('mario_memory_volume', this.value);
 });
 
@@ -178,8 +199,6 @@ function toggleMute() {
         volumeSlider.value = bgMusic.volume;
     }
     updateMuteIcon(bgMusic.volume);
-
-    // SAUVEGARDE DE L'ÉTAT MUTE/UNMUTE
     localStorage.setItem('mario_memory_volume', bgMusic.volume);
 }
 
@@ -252,7 +271,6 @@ function clearAllEffects() {
     isCherryActive = false;
 }
 
-// --- FIX SHYGUY ---
 function clearShyGuyEffect() {
     isShyGuyActive = false;
     document.body.classList.remove('shyguy-mode');
@@ -292,6 +310,8 @@ function clearCherryEffect() {
     document.body.classList.remove('cursor-hidden');
 }
 
+// --- NAVIGATION & MENUS ---
+
 function goToMainMenu() {
     document.getElementById('winMessage').style.display = 'none';
     document.getElementById('loseMessage').style.display = 'none';
@@ -301,6 +321,10 @@ function goToMainMenu() {
     customMenu.classList.remove('active');
     skinMenu.classList.remove('active');
     albumMenu.classList.remove('active');
+
+    // Fermer le menu fond s'il est ouvert
+    if (bgMenu) bgMenu.classList.remove('active');
+
     countdownOverlay.classList.remove('active');
 
     startMenu.classList.add('active');
@@ -325,6 +349,7 @@ function togglePause() {
         selectionMenu.classList.contains('active') ||
         customMenu.classList.contains('active') ||
         skinMenu.classList.contains('active') ||
+        (bgMenu && bgMenu.classList.contains('active')) ||
         albumMenu.classList.contains('active') ||
         countdownOverlay.classList.contains('active') ||
         document.getElementById('helpMenu').classList.contains('active')) return;
@@ -376,7 +401,7 @@ function restartCurrentLevel() {
     startCountdown();
 }
 
-// --- FONCTIONS CUSTOM ---
+// --- FONCTIONS CUSTOM GAME ---
 function openCustomMenu() {
     startMenu.classList.remove('active');
     customMenu.classList.add('active');
@@ -403,7 +428,6 @@ function selectSkin(skinName) {
     currentSkin = skinName;
     localStorage.setItem('mario_skin', skinName);
     updateSkinSelectionUI(currentSkin);
-
     playSound(document.getElementById('sfxFlip'));
 }
 
@@ -446,6 +470,111 @@ function renderAlbumGrid() {
 
     progressText.innerText = `Progression : ${unlockedCount} / ${allCharacters.length} débloqués`;
 }
+
+// --- GESTION INTELLIGENTE DES FONDS (CLAIR / SOMBRE) ---
+
+function getCurrentMode() {
+    return document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+}
+
+// Fonction centrale qui applique les couleurs selon le mode actif
+function applyCurrentThemeColors() {
+    const mode = getCurrentMode(); // 'light' ou 'dark'
+
+    // Clés de sauvegarde
+    const savedMain = localStorage.getItem(`mario_bg_${mode}_main`);
+    const savedLine = localStorage.getItem(`mario_bg_${mode}_line`);
+
+    // Valeurs ou Défaut
+    const colorMain = savedMain || DEFAULT_COLORS[mode].main;
+    const colorLine = savedLine || DEFAULT_COLORS[mode].line;
+
+    // Application CSS
+    document.documentElement.style.setProperty('--bg-color', colorMain);
+    document.documentElement.style.setProperty('--bg-line', colorLine);
+
+    // Mettre à jour les inputs
+    if (bgMenu.classList.contains('active')) {
+        if (bgColorInput) bgColorInput.value = colorMain;
+        if (bgLineInput) bgLineInput.value = colorLine;
+
+        // Mettre à jour l'état visuel des boutons de switch
+        updateSwitchButtons(mode);
+    }
+}
+
+// Nouvelle fonction pour changer de mode DEPUIS le menu
+function switchBgMode(targetMode) {
+    const currentMode = getCurrentMode();
+
+    // Si on demande le mode opposé à celui actuel, on simule un clic sur le bouton thème principal
+    if (targetMode !== currentMode) {
+        toggleTheme();
+    }
+    // Si c'est déjà le bon mode, on s'assure juste que l'UI est à jour
+    else {
+        applyCurrentThemeColors();
+        updateSwitchButtons(targetMode);
+    }
+}
+
+function updateSwitchButtons(mode) {
+    const btnLight = document.getElementById('btnEditLight');
+    const btnDark = document.getElementById('btnEditDark');
+    const title = document.getElementById('bgEditTitle');
+
+    if (mode === 'dark') {
+        btnDark.classList.add('active');
+        btnLight.classList.remove('active');
+        if (title) title.innerText = "Édition du thème : SOMBRE";
+    } else {
+        btnLight.classList.add('active');
+        btnDark.classList.remove('active');
+        if (title) title.innerText = "Édition du thème : CLAIR";
+    }
+}
+
+function openBgMenu() {
+    startMenu.classList.remove('active');
+    if (bgMenu) bgMenu.classList.add('active');
+
+    // Au lancement, on charge l'état actuel
+    applyCurrentThemeColors();
+}
+
+// Écouteur Couleur Principale
+if (bgColorInput) {
+    bgColorInput.addEventListener('input', (e) => {
+        const mode = getCurrentMode();
+        const color = e.target.value;
+        document.documentElement.style.setProperty('--bg-color', color);
+        localStorage.setItem(`mario_bg_${mode}_main`, color);
+    });
+}
+
+// Écouteur Couleur Rayures
+if (bgLineInput) {
+    bgLineInput.addEventListener('input', (e) => {
+        const mode = getCurrentMode();
+        const color = e.target.value;
+        document.documentElement.style.setProperty('--bg-line', color);
+        localStorage.setItem(`mario_bg_${mode}_line`, color);
+    });
+}
+
+function resetBackground() {
+    const mode = getCurrentMode();
+
+    // Supprime seulement les clés du mode actuel
+    localStorage.removeItem(`mario_bg_${mode}_main`);
+    localStorage.removeItem(`mario_bg_${mode}_line`);
+
+    // Réapplique les couleurs (retombe sur DEFAULT_COLORS)
+    applyCurrentThemeColors();
+
+    playSound(document.getElementById('sfxFlip'));
+}
+
 
 function setupCustomGame() {
     const p = parseInt(document.getElementById('customPairs').value);
@@ -616,6 +745,8 @@ function startCountdown() {
     }, 1000);
 }
 
+// --- LOGIQUE DE JEU ---
+
 function launchGameLogic() {
     const level = levels[currentLevelKey];
     isGameOver = false;
@@ -685,7 +816,6 @@ function launchGameLogic() {
     const savedBest = localStorage.getItem(`mario_best_${currentLevelKey}`);
     bestScoreDisplay.innerText = savedBest ? savedBest : 0;
 
-    // --- RESET BARRE PROGRESSION ---
     document.getElementById('progressBar').style.width = '0%';
 
     let deckPart1 = selectedCharsForGame.map(c => ({ ...c }));
@@ -700,7 +830,6 @@ function launchGameLogic() {
     const cardWidth = `calc(${100 / level.cols}% - 16px)`;
     gameBoard.innerHTML = '';
 
-    // 1. VERROUILLER LE PLATEAU
     lockBoard = true;
 
     deck.forEach((char, index) => {
@@ -708,8 +837,6 @@ function launchGameLogic() {
         card.classList.add('memory-card');
         card.style.width = cardWidth;
         card.dataset.name = char.name;
-
-        // 2. CARTE CACHÉE
         card.style.opacity = '0';
 
         card.innerHTML = `
@@ -720,7 +847,6 @@ function launchGameLogic() {
         card.addEventListener('click', flipCard);
         gameBoard.appendChild(card);
 
-        // 3. ANIMATION
         setTimeout(() => {
             if (!isGameOver) {
                 card.classList.add('deal-anim');
@@ -730,7 +856,6 @@ function launchGameLogic() {
         }, index * 100);
     });
 
-    // 4. DÉMARRER A LA FIN DE LA DISTRIBUTION
     clearInterval(timerInterval);
 
     const dealingDuration = deck.length * 100 + 500;
@@ -793,19 +918,16 @@ function disableCards() {
     secondCard.removeEventListener('click', flipCard);
 
     if (firstCard.dataset.name === 'bobomb') {
-        // --- FIX BUG : VERROUILLER LE PLATEAU IMMEDIATEMENT ---
         lockBoard = true;
-
         playSound(sfxExplosion);
 
         firstCard.classList.add('bomb-explode');
         secondCard.classList.add('bomb-explode');
 
-        // --- AJOUT DE LA CLASSE STATIC POUR FIXER L'ANIMATION ---
         setTimeout(() => {
             firstCard.classList.add('static');
             secondCard.classList.add('static');
-        }, 800); // Correspond à la durée de l'animation CSS
+        }, 800);
 
         lives--;
         livesDisplay.innerText = lives;
@@ -825,7 +947,6 @@ function disableCards() {
 
         matchCount++;
 
-        // --- MISE A JOUR BARRE PROGRESSION ---
         let progress = (matchCount / totalPairs) * 100;
         document.getElementById('progressBar').style.width = progress + '%';
 
@@ -858,7 +979,6 @@ function disableCards() {
 
     matchCount++;
 
-    // --- MISE A JOUR BARRE PROGRESSION ---
     let progress = (matchCount / totalPairs) * 100;
     document.getElementById('progressBar').style.width = progress + '%';
 
@@ -917,7 +1037,6 @@ function disableCards() {
 
     if (firstCard.dataset.name === 'star' && !isGameWon) triggerStarEffect();
 
-    // MODIFICATION : Bowser ne se déclenche pas s'il ne reste qu'une seule paire (2 cartes)
     if (firstCard.dataset.name === 'bowser' && !isGameWon && (totalPairs - matchCount) > 1) triggerBowserEffect();
 
     if (firstCard.dataset.name === 'fireflower' && !isGameWon) triggerFireFlowerEffect();
@@ -978,7 +1097,6 @@ function triggerBowserEffect() {
     document.body.classList.add('bowser-active');
     bowserMsg.style.display = 'block';
 
-    // MODIFICATION ICI : Exclusion de .bomb-explode
     const cards = document.querySelectorAll('.memory-card:not(.matched):not(.bomb-explode)');
     cards.forEach(c => {
         c.classList.add('magic-swap');
@@ -991,7 +1109,6 @@ function triggerBowserEffect() {
         const unmatchedCards = [];
 
         allCards.forEach((card, index) => {
-            // MODIFICATION ICI : Traitement de .bomb-explode comme matched
             if (card.classList.contains('matched') || card.classList.contains('bomb-explode')) {
                 matchedIndices.push(index);
             } else {
@@ -1036,7 +1153,6 @@ function triggerBowserEffect() {
 function unflipCards() {
     lockBoard = true;
 
-    // AJOUT: Feedback erreur
     firstCard.classList.add('error');
     secondCard.classList.add('error');
 
@@ -1063,7 +1179,6 @@ function unflipCards() {
     setTimeout(() => {
         if (isGameOver) return;
 
-        // AJOUT: Nettoyage classe erreur
         firstCard.classList.remove('error');
         secondCard.classList.remove('error');
 
@@ -1157,7 +1272,6 @@ function handleVictory() {
         newRecordText.style.display = 'none';
     }
 
-    // --- DEBLOCAGE ALBUM ---
     let newUnlocks = 0;
     selectedCharsForGame.forEach(char => {
         if (!unlockedCharacters.includes(char.name)) {
@@ -1239,7 +1353,6 @@ function triggerFireFlowerEffect() {
                 card.classList.add('flip');
                 card.classList.add('matched');
                 card.querySelector('.front-face').style.background = '#ffdcb0';
-                // FIX DU CLICK SUR CARTE DEJA TROUVEE PAR FLEUR
                 card.removeEventListener('click', flipCard);
             });
 
@@ -1305,7 +1418,6 @@ function triggerKamekEffect() {
         else swapCount = 6;
     }
 
-    // Sélectionner uniquement les cartes valides (ni trouvées, ni retournées, ni explosées)
     const candidates = Array.from(document.querySelectorAll('.memory-card:not(.matched):not(.flip):not(.bomb-explode)'));
 
     if (candidates.length < swapCount) return;
@@ -1317,7 +1429,6 @@ function triggerKamekEffect() {
         candidates.splice(randIndex, 1);
     }
 
-    // Sauvegarder l'état actuel (Nom ET Source de l'image)
     const states = toSwap.map(card => ({
         name: card.dataset.name,
         src: card.querySelector('.front-face img').src,
@@ -1332,13 +1443,11 @@ function triggerKamekEffect() {
     });
 
     setTimeout(() => {
-        // Mélange des états
         for (let i = states.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [states[i], states[j]] = [states[j], states[i]];
         }
 
-        // Réapplication propre des données
         toSwap.forEach((card, index) => {
             card.dataset.name = states[index].name;
             const img = card.querySelector('.front-face img');
@@ -1372,7 +1481,6 @@ lifeBonusIndicator.addEventListener('animationend', () => {
 });
 
 document.addEventListener('keydown', (e) => {
-    // On ignore si on est dans le menu principal ou de sélection (sauf si vous voulez que m/p fonctionnent partout ?)
     if (startMenu.classList.contains('active') || selectionMenu.classList.contains('active')) return;
 
     switch (e.key.toLowerCase()) {
@@ -1529,11 +1637,10 @@ function triggerThunderEffect() {
     }, duration);
 }
 
-// --- FONCTION CHAMPI POISON ---
 function triggerPoisonEffect() {
     isPoisonActive = true;
-    document.body.classList.add('rotate-screen'); // Rotation 180deg
-    document.body.classList.add('poison-fog');    // Brouillard violet
+    document.body.classList.add('rotate-screen');
+    document.body.classList.add('poison-fog');
 
     try {
         const warpSfx = new Audio('audio/warp.mp3');
@@ -1547,19 +1654,16 @@ function triggerPoisonEffect() {
         document.body.classList.remove('rotate-screen');
         document.body.classList.remove('poison-fog');
         isPoisonActive = false;
-    }, 10000); // 10 secondes
+    }, 10000);
 }
 
-// --- FONCTION SHYGUY (MASKASS) - CORRIGEE ---
 function triggerShyGuyEffect() {
-    // Nettoyage préventif pour éviter les conflits (zombie listeners)
     clearShyGuyEffect();
 
     isShyGuyActive = true;
     document.body.classList.add('shyguy-mode');
 
     try {
-        // FIX: Check if sfxShyGuy exists to avoid crash
         if (typeof sfxShyGuy !== 'undefined' && sfxShyGuy) {
             playSound(sfxShyGuy);
         }
@@ -1567,85 +1671,68 @@ function triggerShyGuyEffect() {
 
     spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "FUITE ! 🏃", "#ff69b4");
 
-    // Définition de la fonction de fuite
     shyguyHandler = (e) => {
         const cards = document.querySelectorAll('.memory-card');
         const mouseX = e.clientX;
         const mouseY = e.clientY;
-        const radius = 250; // Rayon de détection
+        const radius = 250;
 
         cards.forEach(card => {
-            // --- FIX CRITIQUE : IGNORER CARTES TROUVÉES OU RETOURNÉES ---
             if (card.classList.contains('matched') || card.classList.contains('flip')) {
-                if (isTinyMode) card.style.transform = 'scale(0.6) rotateY(180deg)'; // Keep flipped cards correctly
-                else if (!card.classList.contains('matched')) card.style.transform = 'rotateY(180deg)'; // flipped but not matched
-                else card.style.transform = ''; // matched cards might rely on CSS
+                if (isTinyMode) card.style.transform = 'scale(0.6) rotateY(180deg)';
+                else if (!card.classList.contains('matched')) card.style.transform = 'rotateY(180deg)';
+                else card.style.transform = '';
                 return;
             }
 
             const rect = card.getBoundingClientRect();
             const cardX = rect.left + rect.width / 2;
             const cardY = rect.top + rect.height / 2;
-
-            // Distance entre la souris et le centre de la carte
             const dist = Math.hypot(mouseX - cardX, mouseY - cardY);
 
             if (dist < radius) {
-                // Calcul de l'angle pour fuir à l'opposé
                 const angle = Math.atan2(cardY - mouseY, cardX - mouseX);
-                // La force de répulsion augmente plus on est proche
                 const force = (radius - dist) * 2.5;
 
                 const moveX = Math.cos(angle) * force;
                 const moveY = Math.sin(angle) * force;
 
-                // On applique le mouvement.
-                // On vérifie si le mode 'Tiny' (éclair) est actif pour ne pas écraser le scale
                 let baseTransform = '';
                 if (isTinyMode) baseTransform = 'scale(0.6)';
                 else baseTransform = 'scale(1)';
 
                 card.style.transform = `${baseTransform} translate(${moveX}px, ${moveY}px)`;
             } else {
-                // Si la souris est loin, on reset la position (sauf si TinyMode)
                 if (isTinyMode) card.style.transform = 'scale(0.6)';
                 else card.style.transform = '';
             }
         });
     };
 
-    // Activation de l'écouteur
     document.addEventListener('mousemove', shyguyHandler);
 
-    // Arrêt après 8 secondes (Stockage de l'ID)
     shyguyTimeout = setTimeout(() => {
         clearShyGuyEffect();
     }, 8000);
 }
 
-// --- FONCTION DOUBLE CERISE (FAKE CURSOR) ---
 function triggerCherryEffect() {
     isCherryActive = true;
     spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "DOUBLE CURSEUR ! 🍒", "#ff69b4");
 
-    // Création du faux curseur
     const fakeCursor = document.createElement('img');
     fakeCursor.src = 'curseur/cursor.cur';
     fakeCursor.classList.add('fake-cursor');
     fakeCursor.style.display = 'none';
     document.body.appendChild(fakeCursor);
 
-    // Gestionnaire pour le suivi de souris
     cherryHandler = (e) => {
-        // Décalage 125px
         fakeCursor.style.left = (e.clientX + CHERRY_OFFSET_X) + 'px';
         fakeCursor.style.top = (e.clientY + CHERRY_OFFSET_Y) + 'px';
 
-        // Détection du curseur POINTER (main) sous la vraie souris
         let cursorType = 'default';
         let el = e.target;
 
-        // Remontée dans le DOM pour trouver un style 'pointer'
         while (el && el !== document.body && el !== document) {
             const style = window.getComputedStyle(el);
             if (style.cursor && style.cursor.includes('pointer')) {
@@ -1655,7 +1742,6 @@ function triggerCherryEffect() {
             el = el.parentElement;
         }
 
-        // Mise à jour de l'image du faux curseur
         if (cursorType === 'pointer') {
             if (!fakeCursor.src.includes('pointer.cur')) {
                 fakeCursor.src = 'curseur/pointer.cur';
@@ -1669,20 +1755,16 @@ function triggerCherryEffect() {
 
     document.addEventListener('mousemove', cherryHandler);
 
-    // Gestion du clic magique (quand le vrai curseur est caché)
     magicClickHandler = (e) => {
         if (!e.isTrusted) return;
 
-        // Si le vrai curseur est caché, on intercepte le clic
         if (document.body.classList.contains('cursor-hidden')) {
             e.stopPropagation();
             e.preventDefault();
 
-            // Calcul de la position du clone
             const fakeX = e.clientX + CHERRY_OFFSET_X;
             const fakeY = e.clientY + CHERRY_OFFSET_Y;
 
-            // On cache le clone temporairement pour trouver l'élément dessous
             fakeCursor.style.display = 'none';
             let target = document.elementFromPoint(fakeX, fakeY);
             fakeCursor.style.display = 'block';
@@ -1690,12 +1772,9 @@ function triggerCherryEffect() {
             if (target) {
                 const clickable = target.closest('.memory-card') || target.closest('button') || target.closest('.hud-btn');
 
-                // --- FIX CRITIQUE : NE PAS CLIQUER SI CARTE DÉJÀ TROUVÉE ---
-                // On vérifie 'matched' (trouvée) ET 'flip' (retournée, ex: première carte)
                 if (clickable && !clickable.classList.contains('matched') && !clickable.classList.contains('flip')) {
                     clickable.click();
 
-                    // Feedback visuel
                     fakeCursor.style.transform = "scale(0.8)";
                     setTimeout(() => fakeCursor.style.transform = "scale(1)", 100);
                 }
@@ -1704,23 +1783,19 @@ function triggerCherryEffect() {
     };
     document.addEventListener('click', magicClickHandler, true);
 
-    // Intervalle pour l'alternance stricte
     let isRealCursorVisible = true;
     cherryInterval = setInterval(() => {
         isRealCursorVisible = !isRealCursorVisible;
 
         if (isRealCursorVisible) {
-            // Phase 1 : Vrai visible, Faux invisible
             document.body.classList.remove('cursor-hidden');
             fakeCursor.style.display = 'none';
         } else {
-            // Phase 2 : Vrai invisible, Faux visible
             document.body.classList.add('cursor-hidden');
             fakeCursor.style.display = 'block';
         }
-    }, 1000); // CHANGE TOUTES LES SECONDES
+    }, 1000);
 
-    // Durée totale : 15 secondes
     setTimeout(() => {
         clearCherryEffect();
     }, 15000);
