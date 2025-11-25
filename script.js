@@ -1,4 +1,4 @@
-﻿// LISTE COMPLETE AVEC LES NOUVEAUX PERSONNAGES
+// LISTE COMPLETE AVEC LES NOUVEAUX PERSONNAGES
 const characterNames = [
     'mario', 'luigi', 'peach', 'bowser', 'yoshi',
     'star', 'toad', 'wario', 'waluigi', 'dk',
@@ -81,10 +81,9 @@ let isIceActive = false;
 let isChompActive = false;
 let isTinyMode = false;
 let isPoisonActive = false;
-// VARIABLES CORRIGEES POUR SHYGUY
 let isShyGuyActive = false;
 let shyguyHandler = null;
-let shyguyTimeout = null; // Nouveau : pour stocker le Timer
+let shyguyTimeout = null;
 
 let isCherryActive = false;
 let cherryHandler = null;
@@ -114,17 +113,24 @@ const descriptions = {
     'default': { text: "Personnage classique.", type: "neutral" }
 };
 
-// --- GESTION DU SKIN ---
 let currentSkin = localStorage.getItem('mario_skin') || 'skin-block';
-
-// --- GESTION DE L'ALBUM (STOCKAGE LOCAL) ---
 let unlockedCharacters = JSON.parse(localStorage.getItem('mario_album')) || [];
-
-// --- GESTION DE LA SÉLECTION ---
 let selectedCharsForGame = [];
 let targetPairCount = 0;
 
-bgMusic.volume = lastVolume;
+// --- RESTAURATION DU VOLUME SAUVEGARDÉ ---
+const savedVolume = localStorage.getItem('mario_memory_volume');
+if (savedVolume !== null) {
+    // Si une valeur existe, on l'applique
+    lastVolume = parseFloat(savedVolume);
+    // Si c'était mute (0), on garde 0, sinon on met la valeur
+    bgMusic.volume = lastVolume;
+    volumeSlider.value = lastVolume;
+} else {
+    // Sinon valeur par défaut
+    bgMusic.volume = lastVolume;
+}
+updateMuteIcon(bgMusic.volume);
 
 const levels = {
     easy: { pairs: 6, cols: 4, time: 40, lives: 5, starTime: 1000 },
@@ -157,6 +163,9 @@ volumeSlider.addEventListener('input', function () {
     bgMusic.volume = this.value;
     updateMuteIcon(this.value);
     if (this.value > 0) lastVolume = this.value;
+
+    // SAUVEGARDE DU VOLUME
+    localStorage.setItem('mario_memory_volume', this.value);
 });
 
 function toggleMute() {
@@ -169,6 +178,9 @@ function toggleMute() {
         volumeSlider.value = bgMusic.volume;
     }
     updateMuteIcon(bgMusic.volume);
+
+    // SAUVEGARDE DE L'ÉTAT MUTE/UNMUTE
+    localStorage.setItem('mario_memory_volume', bgMusic.volume);
 }
 
 function updateMuteIcon(val) {
@@ -245,19 +257,16 @@ function clearShyGuyEffect() {
     isShyGuyActive = false;
     document.body.classList.remove('shyguy-mode');
 
-    // Nettoyage du Listener
     if (shyguyHandler) {
         document.removeEventListener('mousemove', shyguyHandler);
         shyguyHandler = null;
     }
 
-    // Nettoyage du Timeout (IMPORTANT)
     if (shyguyTimeout) {
         clearTimeout(shyguyTimeout);
         shyguyTimeout = null;
     }
 
-    // Réinitialiser la position des cartes
     document.querySelectorAll('.memory-card').forEach(c => {
         c.style.transform = '';
     });
@@ -286,13 +295,15 @@ function clearCherryEffect() {
 function goToMainMenu() {
     document.getElementById('winMessage').style.display = 'none';
     document.getElementById('loseMessage').style.display = 'none';
-    pauseMenu.style.display = 'none';
-    selectionMenu.style.display = 'none';
-    customMenu.style.display = 'none';
-    skinMenu.style.display = 'none';
-    albumMenu.style.display = 'none';
-    startMenu.style.display = 'flex';
-    countdownOverlay.style.display = 'none';
+
+    pauseMenu.classList.remove('active');
+    selectionMenu.classList.remove('active');
+    customMenu.classList.remove('active');
+    skinMenu.classList.remove('active');
+    albumMenu.classList.remove('active');
+    countdownOverlay.classList.remove('active');
+
+    startMenu.classList.add('active');
 
     clearInterval(timerInterval);
     gameBoard.innerHTML = '';
@@ -310,13 +321,13 @@ function goToMainMenu() {
 }
 
 function togglePause() {
-    if (startMenu.style.display === 'flex' ||
-        selectionMenu.style.display === 'flex' ||
-        customMenu.style.display === 'flex' ||
-        skinMenu.style.display === 'flex' ||
-        albumMenu.style.display === 'flex' ||
-        countdownOverlay.style.display === 'flex' ||
-        document.getElementById('helpMenu').style.display === 'flex') return;
+    if (startMenu.classList.contains('active') ||
+        selectionMenu.classList.contains('active') ||
+        customMenu.classList.contains('active') ||
+        skinMenu.classList.contains('active') ||
+        albumMenu.classList.contains('active') ||
+        countdownOverlay.classList.contains('active') ||
+        document.getElementById('helpMenu').classList.contains('active')) return;
 
     if (document.getElementById('winMessage').style.display === 'block' ||
         document.getElementById('loseMessage').style.display === 'block') return;
@@ -325,11 +336,11 @@ function togglePause() {
         isPaused = true;
         clearInterval(timerInterval);
         playSound(sfxPause);
-        pauseMenu.style.display = 'flex';
+        pauseMenu.classList.add('active');
         bgMusic.pause();
     } else {
         isPaused = false;
-        pauseMenu.style.display = 'none';
+        pauseMenu.classList.remove('active');
         timerInterval = setInterval(updateTimer, 1000);
         if (volumeSlider.value > 0 && !isBowserActive) bgMusic.play();
     }
@@ -337,16 +348,17 @@ function togglePause() {
 
 function toggleHelp() {
     const helpMenu = document.getElementById('helpMenu');
-    if (helpMenu.style.display === 'none' || helpMenu.style.display === '') {
-        helpMenu.style.display = 'flex';
-        if (!isPaused && !isGameOver && startMenu.style.display !== 'flex' && selectionMenu.style.display !== 'flex') {
+
+    if (!helpMenu.classList.contains('active')) {
+        helpMenu.classList.add('active');
+        if (!isPaused && !isGameOver && !startMenu.classList.contains('active') && !selectionMenu.classList.contains('active')) {
             isPaused = true;
             clearInterval(timerInterval);
             bgMusic.pause();
         }
     } else {
-        helpMenu.style.display = 'none';
-        if (isPaused && document.getElementById('pauseMenu').style.display === 'none' && !isGameOver && startMenu.style.display !== 'flex') {
+        helpMenu.classList.remove('active');
+        if (isPaused && !document.getElementById('pauseMenu').classList.contains('active') && !isGameOver && !startMenu.classList.contains('active')) {
             isPaused = false;
             timerInterval = setInterval(updateTimer, 1000);
             if (volumeSlider.value > 0 && !isBowserActive) bgMusic.play();
@@ -355,7 +367,7 @@ function toggleHelp() {
 }
 
 function restartCurrentLevel() {
-    pauseMenu.style.display = 'none';
+    pauseMenu.classList.remove('active');
     document.getElementById('winMessage').style.display = 'none';
     document.getElementById('loseMessage').style.display = 'none';
     sfxGameOver.pause();
@@ -366,51 +378,39 @@ function restartCurrentLevel() {
 
 // --- FONCTIONS CUSTOM ---
 function openCustomMenu() {
-    startMenu.style.display = 'none';
-    customMenu.style.display = 'flex';
+    startMenu.classList.remove('active');
+    customMenu.classList.add('active');
 }
 
 // --- FONCTIONS SKIN ---
 function openSkinMenu() {
-    startMenu.style.display = 'none';
-    skinMenu.style.display = 'flex';
+    startMenu.classList.remove('active');
+    skinMenu.classList.add('active');
+    updateSkinSelectionUI(currentSkin);
 }
 
 function updateSkinSelectionUI(selectedSkinName) {
-    // 1. Désactiver toutes les sélections précédentes
     const allOptions = document.querySelectorAll('#skinMenu .skin-option');
     allOptions.forEach(opt => opt.classList.remove('selected'));
 
-    // 2. Activer l'option correspondante
     const selectedElement = document.getElementById(`${selectedSkinName}-option`);
     if (selectedElement) {
         selectedElement.classList.add('selected');
     }
 }
-function openSkinMenu() {
-    startMenu.style.display = 'none';
-    skinMenu.style.display = 'flex';
 
-    // NOUVEAU : Mettre à jour l'affichage immédiatement à l'ouverture du menu
-    updateSkinSelectionUI(currentSkin); //
-}
 function selectSkin(skinName) {
     currentSkin = skinName;
     localStorage.setItem('mario_skin', skinName);
-
-    // NOUVEAU : Mise à jour de l'UI pour que l'indicateur soit visible immédiatement
-    // si l'utilisateur revient dans le menu Skins.
-    updateSkinSelectionUI(currentSkin); //
+    updateSkinSelectionUI(currentSkin);
 
     playSound(document.getElementById('sfxFlip'));
-    skinMenu.style.display = 'none';
-    startMenu.style.display = 'flex';
 }
 
 // --- FONCTIONS ALBUM ---
 function openAlbumMenu() {
-    startMenu.style.display = 'none';
-    albumMenu.style.display = 'flex';
+    startMenu.classList.remove('active');
+    albumMenu.classList.add('active');
     renderAlbumGrid();
 }
 
@@ -465,7 +465,7 @@ function setupCustomGame() {
         starTime: 1500
     };
 
-    customMenu.style.display = 'none';
+    customMenu.classList.remove('active');
     openSelectionMenu(uniqueKey);
 }
 
@@ -485,8 +485,8 @@ function openSelectionMenu(levelKey) {
     renderSelectionGrid();
     updateSelectionUI();
 
-    startMenu.style.display = 'none';
-    selectionMenu.style.display = 'flex';
+    startMenu.classList.remove('active');
+    selectionMenu.classList.add('active');
 }
 
 function renderSelectionGrid() {
@@ -579,12 +579,12 @@ function randomSelection() {
 
 function confirmSelection() {
     if (selectedCharsForGame.length !== targetPairCount) return;
-    selectionMenu.style.display = 'none';
+    selectionMenu.classList.remove('active');
     startCountdown();
 }
 
 function startCountdown() {
-    countdownOverlay.style.display = 'flex';
+    countdownOverlay.classList.add('active');
     const sfxFlip = document.getElementById('sfxFlip');
     const sfxStart = document.getElementById('sfxStart');
 
@@ -610,7 +610,7 @@ function startCountdown() {
             resetAnim();
         } else {
             clearInterval(interval);
-            countdownOverlay.style.display = 'none';
+            countdownOverlay.classList.remove('active');
             launchGameLogic();
         }
     }, 1000);
@@ -685,6 +685,9 @@ function launchGameLogic() {
     const savedBest = localStorage.getItem(`mario_best_${currentLevelKey}`);
     bestScoreDisplay.innerText = savedBest ? savedBest : 0;
 
+    // --- RESET BARRE PROGRESSION ---
+    document.getElementById('progressBar').style.width = '0%';
+
     let deckPart1 = selectedCharsForGame.map(c => ({ ...c }));
     let deckPart2 = selectedCharsForGame.map(c => ({ ...c }));
     let deck = [...deckPart1, ...deckPart2];
@@ -732,7 +735,7 @@ function launchGameLogic() {
 
     const dealingDuration = deck.length * 100 + 500;
     setTimeout(() => {
-        if (!isGameOver && !isPaused && startMenu.style.display === 'none') {
+        if (!isGameOver && !isPaused && !startMenu.classList.contains('active')) {
             document.querySelectorAll('.memory-card').forEach(c => c.classList.remove('deal-anim'));
 
             lockBoard = false;
@@ -790,10 +793,19 @@ function disableCards() {
     secondCard.removeEventListener('click', flipCard);
 
     if (firstCard.dataset.name === 'bobomb') {
+        // --- FIX BUG : VERROUILLER LE PLATEAU IMMEDIATEMENT ---
+        lockBoard = true;
+
         playSound(sfxExplosion);
 
         firstCard.classList.add('bomb-explode');
         secondCard.classList.add('bomb-explode');
+
+        // --- AJOUT DE LA CLASSE STATIC POUR FIXER L'ANIMATION ---
+        setTimeout(() => {
+            firstCard.classList.add('static');
+            secondCard.classList.add('static');
+        }, 800); // Correspond à la durée de l'animation CSS
 
         lives--;
         livesDisplay.innerText = lives;
@@ -812,6 +824,10 @@ function disableCards() {
         multiplierDisplay.innerText = 'x1';
 
         matchCount++;
+
+        // --- MISE A JOUR BARRE PROGRESSION ---
+        let progress = (matchCount / totalPairs) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
 
         if (lives <= 0) {
             setTimeout(() => {
@@ -841,6 +857,10 @@ function disableCards() {
     secondCard.classList.add('matched');
 
     matchCount++;
+
+    // --- MISE A JOUR BARRE PROGRESSION ---
+    let progress = (matchCount / totalPairs) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
 
     let turnBase = 100 * scoreMultiplier;
 
@@ -896,7 +916,10 @@ function disableCards() {
     const isGameWon = (matchCount === totalPairs);
 
     if (firstCard.dataset.name === 'star' && !isGameWon) triggerStarEffect();
-    if (firstCard.dataset.name === 'bowser' && !isGameWon) triggerBowserEffect();
+
+    // MODIFICATION : Bowser ne se déclenche pas s'il ne reste qu'une seule paire (2 cartes)
+    if (firstCard.dataset.name === 'bowser' && !isGameWon && (totalPairs - matchCount) > 1) triggerBowserEffect();
+
     if (firstCard.dataset.name === 'fireflower' && !isGameWon) triggerFireFlowerEffect();
     if (firstCard.dataset.name === 'ghost' && !isGameWon) triggerGhostEffect();
     if (firstCard.dataset.name === 'blooper' && !isGameWon) triggerBlooperEffect();
@@ -955,7 +978,8 @@ function triggerBowserEffect() {
     document.body.classList.add('bowser-active');
     bowserMsg.style.display = 'block';
 
-    const cards = document.querySelectorAll('.memory-card:not(.matched)');
+    // MODIFICATION ICI : Exclusion de .bomb-explode
+    const cards = document.querySelectorAll('.memory-card:not(.matched):not(.bomb-explode)');
     cards.forEach(c => {
         c.classList.add('magic-swap');
         c.style.animationIterationCount = "infinite";
@@ -967,7 +991,8 @@ function triggerBowserEffect() {
         const unmatchedCards = [];
 
         allCards.forEach((card, index) => {
-            if (card.classList.contains('matched')) {
+            // MODIFICATION ICI : Traitement de .bomb-explode comme matched
+            if (card.classList.contains('matched') || card.classList.contains('bomb-explode')) {
                 matchedIndices.push(index);
             } else {
                 unmatchedCards.push(card);
@@ -1011,6 +1036,10 @@ function triggerBowserEffect() {
 function unflipCards() {
     lockBoard = true;
 
+    // AJOUT: Feedback erreur
+    firstCard.classList.add('error');
+    secondCard.classList.add('error');
+
     comboCount = 0;
     scoreMultiplier = 1;
     multiplierDisplay.innerText = 'x1';
@@ -1033,6 +1062,11 @@ function unflipCards() {
 
     setTimeout(() => {
         if (isGameOver) return;
+
+        // AJOUT: Nettoyage classe erreur
+        firstCard.classList.remove('error');
+        secondCard.classList.remove('error');
+
         firstCard.classList.remove('flip');
         secondCard.classList.remove('flip');
         resetBoard();
@@ -1338,7 +1372,8 @@ lifeBonusIndicator.addEventListener('animationend', () => {
 });
 
 document.addEventListener('keydown', (e) => {
-    if (startMenu.style.display === 'flex' || selectionMenu.style.display === 'flex') return;
+    // On ignore si on est dans le menu principal ou de sélection (sauf si vous voulez que m/p fonctionnent partout ?)
+    if (startMenu.classList.contains('active') || selectionMenu.classList.contains('active')) return;
 
     switch (e.key.toLowerCase()) {
         case 'p':
@@ -1346,10 +1381,6 @@ document.addEventListener('keydown', (e) => {
             break;
         case 'm':
             toggleMute();
-            break;
-        case 'escape':
-            if (!isPaused) togglePause();
-            else if (pauseMenu.style.display === 'flex') togglePause();
             break;
     }
 });
@@ -1528,7 +1559,10 @@ function triggerShyGuyEffect() {
     document.body.classList.add('shyguy-mode');
 
     try {
-        playSound(sfxShyGuy);
+        // FIX: Check if sfxShyGuy exists to avoid crash
+        if (typeof sfxShyGuy !== 'undefined' && sfxShyGuy) {
+            playSound(sfxShyGuy);
+        }
     } catch (e) { console.log("Erreur audio Shyguy", e); }
 
     spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "FUITE ! 🏃", "#ff69b4");
@@ -1538,13 +1572,14 @@ function triggerShyGuyEffect() {
         const cards = document.querySelectorAll('.memory-card');
         const mouseX = e.clientX;
         const mouseY = e.clientY;
-        const radius = 250; // Rayon de détection AUGMENTÉ
+        const radius = 250; // Rayon de détection
 
         cards.forEach(card => {
             // --- FIX CRITIQUE : IGNORER CARTES TROUVÉES OU RETOURNÉES ---
             if (card.classList.contains('matched') || card.classList.contains('flip')) {
-                if (isTinyMode) card.style.transform = 'scale(0.6)';
-                else card.style.transform = '';
+                if (isTinyMode) card.style.transform = 'scale(0.6) rotateY(180deg)'; // Keep flipped cards correctly
+                else if (!card.classList.contains('matched')) card.style.transform = 'rotateY(180deg)'; // flipped but not matched
+                else card.style.transform = ''; // matched cards might rely on CSS
                 return;
             }
 
