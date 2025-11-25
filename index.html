@@ -37,6 +37,8 @@
                 <button class="btn-level btn-skin" style="width: 48%; margin: 15px 0;" onclick="openSkinMenu()">🎨 SKINS</button>
             </div>
 
+            <button class="btn-level btn-bg" onclick="openBgMenu()">🌈 FOND D'ÉCRAN</button>
+
             <button class="btn-level btn-album" onclick="openAlbumMenu()">📒 ALBUM</button>
 
             <button class="btn-level btn-reset" onclick="resetBestScores()">🗑️ EFFACER SCORES</button>
@@ -80,6 +82,35 @@
             </div>
 
             <button class="btn-menu" style="margin-top: 20px;" onclick="goToMainMenu()">VALIDER</button>
+        </div>
+    </div>
+
+    // Background customization menu
+
+    <div class="overlay" id="bgMenu">
+        <div class="menu-box">
+            <h2 style="margin-top:0; color:#FF5733;">PERSONNALISER LE FOND</h2>
+            
+            <div class="bg-mode-switch">
+                <button id="btnEditLight" class="btn-mode" onclick="switchBgMode('light')">☀️ MODE CLAIR</button>
+                <button id="btnEditDark" class="btn-mode" onclick="switchBgMode('dark')">🌙 MODE SOMBRE</button>
+            </div>
+
+            <p id="bgEditTitle">Couleurs actuelles :</p>
+
+            <div class="color-picker-container">
+                <div class="color-option">
+                    <label>Couleur Principale</label>
+                    <input type="color" id="bgColorInput" value="#5C94FC">
+                </div>
+                <div class="color-option">
+                    <label>Couleur des Rayures</label>
+                    <input type="color" id="bgLineInput" value="#6C9FFC">
+                </div>
+            </div>
+
+            <button class="btn-menu" style="background: #333; border-color: #999; margin-top: 20px;" onclick="resetBackground()">↺ DÉFAUT (Mode Actuel)</button>
+            <button class="btn-menu" style="margin-top: 10px;" onclick="goToMainMenu()">VALIDER</button>
         </div>
     </div>
 
