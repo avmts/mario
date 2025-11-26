@@ -10,7 +10,7 @@
 }
 
 body.dark-mode {
-    /* On retire --bg-color et --bg-line d'ici pour que le JS puisse les contrôler */
+    /* Les couleurs de fond sont gérées par le JS via variables CSS */
     --hud-bg: rgba(255,255,255,0.15);
     --hud-border: #999;
 }
@@ -38,6 +38,7 @@ body {
     transition: background-color 0.5s, background-image 0.5s, transform 1s ease;
     overflow-x: hidden;
     cursor: url('curseur/cursor.cur'), auto;
+    /* Animation de base + Danger state gérés ici et plus bas */
     animation: scrollBg 4s linear infinite;
 }
 
@@ -50,6 +51,8 @@ body {
         background-position: 0 80px;
     }
 }
+
+/* --- EFFETS VISUELS (ANIMATIONS) --- */
 
 /* EFFET BOWSER */
 body.bowser-active {
@@ -72,7 +75,7 @@ body.bowser-active {
     }
 }
 
-/* EFFET KAMEK (ECHANGE MAGIQUE) */
+/* EFFET KAMEK */
 .magic-swap {
     animation: spinSwap 0.8s ease-in-out;
     z-index: 10;
@@ -97,10 +100,10 @@ body.bowser-active {
     }
 }
 
-/* NOUVEL EFFET BOB-OMB (EXPLOSION) */
+/* EFFET BOB-OMB */
 .bomb-explode .front-face {
     animation: explodeShake 0.8s cubic-bezier(.36,.07,.19,.97) both;
-    background-color: #ff3333 !important; /* Flash rouge */
+    background-color: #ff3333 !important;
     border-color: #ff0000 !important;
 }
 
@@ -127,9 +130,8 @@ body.bowser-active {
     }
 }
 
-/* FIX: EMPÊCHER LE RE-JEU DE L'ANIMATION */
 .bomb-explode.static .front-face {
-    animation: none !important; /* Stop l'animation */
+    animation: none !important;
     transform: rotateY(180deg) scale(0.9);
     opacity: 0.5;
     background-color: #ff3333 !important;
@@ -281,7 +283,7 @@ h1 {
     text-align: center;
 }
 
-/* BOUTONS */
+/* --- BOUTONS --- */
 .btn-level, .btn-menu {
     display: block;
     width: 220px;
@@ -354,7 +356,6 @@ h1 {
         background-color: #666 !important;
     }
 
-/* Bouton Skins */
 .btn-skin {
     background-color: #049CD8 !important;
     border-color: #5CE1E6 !important;
@@ -365,7 +366,6 @@ h1 {
         background-color: #29B6F6 !important;
     }
 
-/* Bouton Album */
 .btn-album {
     background-color: #FFD700 !important;
     color: #b85c00 !important;
@@ -375,6 +375,17 @@ h1 {
 
     .btn-album:hover {
         background-color: #ffdb4d !important;
+    }
+
+/* Bouton Musique */
+.btn-music {
+    background-color: #9b59b6 !important;
+    border-color: #8e44ad !important;
+    box-shadow: 0 5px 0 #6c3483 !important;
+}
+
+    .btn-music:hover {
+        background-color: #a569bd !important;
     }
 
 .hud-btn {
@@ -502,7 +513,37 @@ input[type=range] {
     overflow-y: auto;
 }
 
-/* ALBUM GRID */
+/* ALBUM GRID & PREVIEW */
+.album-preview-box {
+    height: 140px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 10px;
+}
+
+    .album-preview-box img {
+        height: 90px;
+        width: auto;
+        object-fit: contain;
+        margin-bottom: 10px;
+        filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        transition: all 0.2s ease;
+    }
+
+    .album-preview-box h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #555;
+        text-transform: uppercase;
+        font-family: 'Arial Black', sans-serif;
+        letter-spacing: 1px;
+    }
+
 .album-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
@@ -542,7 +583,36 @@ input[type=range] {
         box-shadow: 0 0 5px #FFD700;
     }
 
-/* --- Indication du skin sélectionné --- */
+    /* FIX: Survol item album (pas de scale qui casse la layout) */
+    .album-item:hover {
+        transform: none;
+        border-color: #049CD8;
+        box-shadow: 0 0 10px #049CD8, inset 0 0 5px rgba(255, 255, 255, 0.5);
+        z-index: 10;
+        cursor: help;
+    }
+
+/* --- SKINS --- */
+/* Lock & Status */
+.lock-overlay {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    z-index: 5;
+    text-shadow: 0 0 5px black;
+}
+
+.skin-status {
+    font-size: 0.8rem;
+    margin-top: 5px;
+    color: #666;
+    background: rgba(255,255,255,0.8);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
 .skin-option.selected {
     border-color: var(--block-gold);
     box-shadow: 0 0 10px var(--block-gold);
@@ -565,7 +635,23 @@ input[type=range] {
         z-index: 10;
     }
 
-/* GRID SKIN SELECTION */
+.skin-option.locked {
+    filter: grayscale(100%);
+    opacity: 0.7;
+    cursor: not-allowed !important;
+    border-color: #999 !important;
+}
+
+    .skin-option.locked .lock-overlay {
+        display: block;
+    }
+
+    .skin-option.locked:hover {
+        transform: none;
+        box-shadow: none;
+        background: #eee;
+    }
+
 .skin-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -604,6 +690,7 @@ input[type=range] {
         color: #333;
     }
 
+/* CUSTOM GAME UI */
 .custom-label {
     display: flex;
     justify-content: space-between;
@@ -681,7 +768,6 @@ input[type=range] {
     color: #FBD000;
 }
 
-/* STYLE DESCRIPTION PERSONNAGE */
 .char-description {
     min-height: 30px;
     margin-top: 10px;
@@ -741,7 +827,80 @@ input[type=range] {
     position: relative;
 }
 
-/* --- BARRE DE PROGRESSION --- */
+/* BARRE DES EFFETS ACTIFS */
+.effects-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    min-height: 50px;
+    pointer-events: none;
+}
+
+.effect-badge {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid white;
+    border-radius: 10px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+    .effect-badge img {
+        width: 80%;
+        height: 80%;
+        object-fit: contain;
+        z-index: 2;
+    }
+
+.effect-timer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    width: 100%;
+    transform-origin: bottom;
+    z-index: 1;
+}
+
+/* Couleurs bordures effets */
+.effect-poison {
+    border-color: #8A2BE2;
+    box-shadow: 0 0 10px #8A2BE2;
+}
+
+.effect-ice {
+    border-color: #00ffff;
+    box-shadow: 0 0 10px #00ffff;
+}
+
+.effect-tiny {
+    border-color: #FFD700;
+    box-shadow: 0 0 10px #FFD700;
+}
+
+.effect-chomp {
+    border-color: #555;
+    box-shadow: 0 0 10px #555;
+}
+
+.effect-shyguy {
+    border-color: #ff69b4;
+    box-shadow: 0 0 10px #ff69b4;
+}
+
+.effect-cherry {
+    border-color: #ff3333;
+    box-shadow: 0 0 10px #ff3333;
+}
+
+/* PROGRESS BAR */
 .progress-container {
     width: 150px;
     height: 20px;
@@ -760,7 +919,7 @@ input[type=range] {
     transition: width 0.5s ease-out;
 }
 
-/* Animations */
+/* Animations Diverses */
 .shake {
     color: red;
     animation: shake 0.5s;
@@ -788,7 +947,6 @@ input[type=range] {
     }
 }
 
-/* --- ANIMATION ERREUR (SHAKE CARTE) --- */
 @keyframes errorShake {
     0%, 100% {
         transform: translateX(0) rotateY(180deg);
@@ -864,40 +1022,6 @@ input[type=range] {
     }
 }
 
-/* ANIMATION PIECE FLOTTANTE */
-.floating-coin {
-    position: absolute;
-    color: #FFD700;
-    font-weight: bold;
-    font-size: 2rem;
-    z-index: 2000;
-    pointer-events: none;
-    text-shadow: 2px 2px 0 #000;
-    animation: coinFloat 1s ease-out forwards;
-}
-
-    .floating-coin::before {
-        content: '🪙';
-        margin-right: 5px;
-    }
-
-@keyframes coinFloat {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: translateY(-30px) scale(1.2);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translateY(-60px) scale(1);
-        opacity: 0;
-    }
-}
-
 .time-urgent {
     color: #ff4d4d;
     animation: pulse 0.5s infinite alternate;
@@ -913,7 +1037,30 @@ input[type=range] {
     }
 }
 
-/* Memory Game */
+/* --- FIX SCROLL ARRETÉ EN CAS DE DANGER --- */
+@keyframes dangerPulse {
+    0% {
+        box-shadow: inset 0 0 0 transparent;
+    }
+
+    50% {
+        box-shadow: inset 0 0 50px red;
+    }
+
+    100% {
+        box-shadow: inset 0 0 0 transparent;
+    }
+}
+
+.danger-state {
+    animation: scrollBg 4s linear infinite, dangerPulse 1s infinite;
+}
+
+    .danger-state .info-panel {
+        border-color: red;
+    }
+
+/* MEMORY GAME GRID & TILT 3D */
 .memory-game {
     width: 95%;
     max-width: 800px;
@@ -935,6 +1082,12 @@ input[type=range] {
     height: auto;
     -webkit-tap-highlight-color: transparent;
 }
+    /* Effet Tilt 3D au survol */
+    .memory-card.tilting {
+        transition: transform 0.1s ease-out !important;
+        z-index: 10;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    }
 
     .memory-card.flip {
         transform: rotateY(180deg);
@@ -956,7 +1109,7 @@ input[type=range] {
     overflow: hidden;
 }
 
-/* DOS DES CARTES : SKINS */
+/* DOS DES CARTES */
 .back-face {
     background-position: center;
     background-repeat: no-repeat;
@@ -994,7 +1147,7 @@ input[type=range] {
         filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
     }
 
-/* Score Table */
+/* SCORE & END SCREEN */
 .score-table {
     width: 100%;
     margin: 20px 0;
@@ -1021,7 +1174,6 @@ input[type=range] {
     margin-top: 10px;
 }
 
-/* End Message */
 .end-msg {
     display: none;
     position: fixed;
@@ -1059,7 +1211,7 @@ input[type=range] {
     transform: none;
 }
 
-/* FIX: Stabilisation */
+/* FIX: Stabilisation au survol */
 .memory-card.flip:not(.error):hover,
 .memory-card.matched:hover {
     transform: rotateY(180deg) !important;
@@ -1070,101 +1222,8 @@ input[type=range] {
     transform: scale(0.6) rotateY(180deg) !important;
 }
 
-/* CURSEUR */
-button, .btn-level, .btn-menu, .hud-btn, .btn-mute, .btn-theme, .memory-card, .select-item, .skin-option, .album-item,
-input[type="range"], input[type="range"]::-webkit-slider-thumb {
-    cursor: url('curseur/pointer.cur'), pointer !important;
-}
+/* --- EFFETS DE JEU (DANGER, GLACE, ETC) --- */
 
-/* --- RESPONSIVE MOBILE --- */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 1.5rem;
-        margin: 10px 0;
-    }
-
-    .info-panel {
-        padding: 5px;
-        gap: 10px;
-        font-size: 0.9rem;
-        width: 95%;
-        justify-content: space-around;
-    }
-
-    .info-item {
-        min-width: auto;
-        margin: 2px;
-    }
-
-    .select-container {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-    }
-
-    .select-item {
-        width: 50px;
-        height: 50px;
-    }
-
-    .album-grid {
-        grid-template-columns: repeat(5, 1fr);
-    }
-
-    .memory-card {
-        margin: 4px;
-    }
-
-    .menu-box {
-        width: 90%;
-        padding: 20px;
-        max-height: 85vh;
-    }
-
-    .btn-level, .btn-menu {
-        width: 100% !important;
-        padding: 12px;
-        font-size: 1rem;
-        margin: 10px 0;
-    }
-
-    #countdownText {
-        font-size: 5rem;
-    }
-
-    .bowser-msg {
-        font-size: 2rem;
-        width: 90%;
-    }
-
-    .ghost-text {
-        font-size: 2rem;
-    }
-}
-
-/* --- MODE DANGER --- */
-@keyframes dangerPulse {
-    0% {
-        box-shadow: inset 0 0 0 transparent;
-    }
-
-    50% {
-        box-shadow: inset 0 0 50px red;
-    }
-
-    100% {
-        box-shadow: inset 0 0 0 transparent;
-    }
-}
-
-.danger-state {
-    animation: dangerPulse 1s infinite;
-}
-
-    .danger-state .info-panel {
-        border-color: red;
-    }
-
-/* --- EFFET FLEUR DE GLACE --- */
 body.frozen-state {
     position: relative;
 }
@@ -1199,7 +1258,6 @@ body.frozen-state {
     }
 }
 
-/* --- EFFET 1-UP --- */
 body.one-up-state {
     position: relative;
 }
@@ -1232,7 +1290,6 @@ body.one-up-state {
     }
 }
 
-/* --- EFFET CHAIN CHOMP --- */
 .chained-shake {
     animation: chainShake 0.5s cubic-bezier(.36,.07,.19,.97) infinite both !important;
     filter: brightness(0.6) grayscale(50%);
@@ -1295,7 +1352,6 @@ body.chomp-flash::before {
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* --- EFFET ÉCLAIR (THUNDER) --- */
 body.thunder-flash::before {
     content: "";
     position: fixed;
@@ -1332,7 +1388,6 @@ body.thunder-flash::before {
         transform: scale(0.6) rotateY(180deg);
     }
 
-/* --- EFFET CHAMPI POISON --- */
 .rotate-screen {
     transform: rotate(180deg);
 }
@@ -1361,7 +1416,6 @@ body.poison-fog::after {
     }
 }
 
-/* --- EFFET SHYGUY --- */
 .shyguy-mode .memory-card {
     transition: transform 0.1s linear !important;
     will-change: transform;
@@ -1378,17 +1432,16 @@ body.poison-fog::after {
     padding: 0;
 }
 
-.cursor-hidden {
+/* FIX: On force le curseur caché partout */
+.cursor-hidden,
+.cursor-hidden * {
     cursor: none !important;
 }
 
+    /* On désactive les effets de survol quand le curseur est caché pour éviter de tricher */
     .cursor-hidden .btn-level:hover,
     .cursor-hidden .btn-menu:hover,
-    .cursor-hidden .hud-btn:hover {
-        transform: none !important;
-        box-shadow: none !important;
-    }
-
+    .cursor-hidden .hud-btn:hover,
     .cursor-hidden .memory-card:not(.flip):not(.matched):hover {
         transform: none !important;
         box-shadow: none !important;
@@ -1415,9 +1468,7 @@ body.poison-fog::after {
     }
 }
 
-/* --- STYLE MENU COULEURS DE FOND --- */
-
-/* Bouton dans le menu principal */
+/* --- MENU FOND (COULEURS) --- */
 .btn-bg {
     background-color: #FF5733 !important;
     border-color: #FFC300 !important;
@@ -1447,7 +1498,6 @@ body.poison-fog::after {
     transition: all 0.2s;
 }
 
-    /* Style quand un mode est sélectionné */
     .btn-mode.active {
         border-color: #FBD000;
         background: #fff;
@@ -1455,7 +1505,6 @@ body.poison-fog::after {
         box-shadow: 0 0 10px #FBD000;
     }
 
-    /* Style spécifique pour le bouton Sombre quand actif */
     .btn-mode#btnEditDark.active {
         background: #333;
         color: white;
@@ -1503,7 +1552,6 @@ input[type="color"] {
         transform: scale(1.1);
     }
 
-    /* Pour Chrome/Edge/Safari */
     input[type="color"]::-webkit-color-swatch-wrapper {
         padding: 0;
     }
@@ -1512,3 +1560,124 @@ input[type="color"] {
         border: 3px solid white;
         border-radius: 50%;
     }
+
+/* --- MENU MUSIQUE (JUKEBOX) --- */
+.music-list-container {
+    max-height: 50vh;
+    overflow-y: auto;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    background: rgba(0,0,0,0.05);
+}
+
+.music-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #333;
+    font-weight: bold;
+    text-align: left;
+}
+
+    .music-option:hover {
+        transform: scale(1.02);
+        border-color: #9b59b6;
+    }
+
+    .music-option.selected {
+        background: #9b59b6;
+        color: white;
+        border-color: #8e44ad;
+        box-shadow: 0 0 10px #9b59b6;
+    }
+
+    .music-option.playing-preview {
+        animation: pulseMusic 1s infinite alternate;
+    }
+
+@keyframes pulseMusic {
+    from {
+        box-shadow: 0 0 5px #9b59b6;
+    }
+
+    to {
+        box-shadow: 0 0 15px #9b59b6;
+    }
+}
+/* --- PARTICULES MAGIQUES (TRAÎNÉE & CLIC) --- */
+.magic-particle {
+    position: fixed;
+    pointer-events: none; /* Important pour cliquer au travers */
+    z-index: 9999;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+}
+
+/* Animation de la traînée (douce) */
+.trail-anim {
+    width: 6px;
+    height: 6px;
+    animation: trailFade 0.6s ease-out forwards;
+}
+
+@keyframes trailFade {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, 20px) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Animation du clic (explosion) */
+.burst-anim {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: burstMove 0.6s ease-out forwards;
+}
+
+@keyframes burstMove {
+    0% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        /* Les variables --x et --y sont définies par le JS */
+        transform: translate(var(--x), var(--y)) scale(0) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+/* --- CURSEUR GLOBAL (APPLIQUÉ PARTOUT À LA FIN) --- */
+button,
+.btn-level,
+.btn-menu,
+.btn-mode,
+.hud-btn,
+.btn-mute,
+.btn-theme,
+.memory-card,
+.select-item,
+.skin-option,
+.album-item,
+.music-option,
+.music-option span,
+input[type="range"],
+input[type="range"]::-webkit-slider-thumb,
+input[type="color"] {
+    cursor: url('curseur/pointer.cur'), pointer !important;
+}
