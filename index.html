@@ -39,7 +39,10 @@
 
             <button class="btn-level btn-bg" onclick="openBgMenu()">🌈 FOND D'ÉCRAN</button>
 
-            <button class="btn-level btn-album" onclick="openAlbumMenu()">📒 ALBUM</button>
+            <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
+                <button class="btn-level btn-music" style="width: 48%; margin: 15px 0;" onclick="openMusicMenu()">🎵 MUSIQUE</button>
+                <button class="btn-level btn-album" style="width: 48%; margin: 15px 0;" onclick="openAlbumMenu()">📒 ALBUM</button>
+            </div>
 
             <button class="btn-level btn-reset" onclick="resetBestScores()">🗑️ EFFACER SCORES</button>
         </div>
@@ -49,6 +52,11 @@
         <div class="menu-box" style="max-width: 800px;">
             <h2 style="margin-top:0; color:#FFD700;">ALBUM DE COLLECTION</h2>
             <p id="albumProgress">Progression : 0 / 0</p>
+
+            <div class="album-preview-box">
+                <img id="previewImg" src="images/block.png" alt="Aperçu">
+                <h3 id="previewName">Survole un sticker !</h3>
+            </div>
 
             <div class="album-grid" id="albumGrid">
             </div>
@@ -60,24 +68,34 @@
     <div class="overlay" id="skinMenu">
         <div class="menu-box">
             <h2 style="margin-top:0; color:#049CD8;">DOS DES CARTES</h2>
-            <p>Choisis ton style :</p>
+            <p>Gagne des parties pour débloquer des styles !</p>
 
             <div class="skin-grid">
                 <div class="skin-option" id="skin-block-option" onclick="selectSkin('skin-block')">
                     <img src="images/block.png" alt="Bloc ?">
                     <span>Classique</span>
+                    <div class="skin-status">Gratuit</div>
                 </div>
+
                 <div class="skin-option" id="skin-pipe-option" onclick="selectSkin('skin-pipe')">
+                    <div class="lock-overlay">🔒</div>
                     <img src="images/pipe.png" alt="Tuyau">
                     <span>Tuyau</span>
+                    <div class="skin-status" id="progress-skin-pipe">0 / 15 (Facile)</div>
                 </div>
+
                 <div class="skin-option" id="skin-coin-option" onclick="selectSkin('skin-coin')">
+                    <div class="lock-overlay">🔒</div>
                     <img src="images/coin.png" alt="Pièce">
                     <span>Pièce</span>
+                    <div class="skin-status" id="progress-skin-coin">0 / 10 (Moyen)</div>
                 </div>
+
                 <div class="skin-option" id="skin-gold-option" onclick="selectSkin('skin-gold')">
+                    <div class="lock-overlay">🔒</div>
                     <img src="images/goldblock.png" alt="Or">
                     <span>Bloc Or</span>
+                    <div class="skin-status" id="progress-skin-gold">0 / 5 (Difficile)</div>
                 </div>
             </div>
 
@@ -85,18 +103,16 @@
         </div>
     </div>
 
-    // Background customization menu
-
     <div class="overlay" id="bgMenu">
         <div class="menu-box">
             <h2 style="margin-top:0; color:#FF5733;">PERSONNALISER LE FOND</h2>
-            
+
             <div class="bg-mode-switch">
                 <button id="btnEditLight" class="btn-mode" onclick="switchBgMode('light')">☀️ MODE CLAIR</button>
                 <button id="btnEditDark" class="btn-mode" onclick="switchBgMode('dark')">🌙 MODE SOMBRE</button>
             </div>
 
-            <p id="bgEditTitle">Couleurs actuelles :</p>
+            <p id="bgEditTitle" style="margin: 5px 0; font-style: italic; color: #666;">Couleurs actuelles :</p>
 
             <div class="color-picker-container">
                 <div class="color-option">
@@ -111,6 +127,20 @@
 
             <button class="btn-menu" style="background: #333; border-color: #999; margin-top: 20px;" onclick="resetBackground()">↺ DÉFAUT (Mode Actuel)</button>
             <button class="btn-menu" style="margin-top: 10px;" onclick="goToMainMenu()">VALIDER</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="musicMenu">
+        <div class="menu-box" style="max-width: 500px;">
+            <h2 style="margin-top:0; color:#9b59b6;">JUKEBOX MARIO 🎵</h2>
+            <p>Choisis la musique de ta partie :</p>
+
+            <button class="btn-menu btn-random" style="width: 100%; margin-bottom: 15px;" onclick="selectRandomMusic()">🔀 SURPRENDS-MOI !</button>
+
+            <div id="musicList" class="music-list-container">
+            </div>
+
+            <button class="btn-menu" style="margin-top: 20px;" onclick="goToMainMenu()">VALIDER</button>
         </div>
     </div>
 
@@ -269,6 +299,9 @@
         <button class="hud-btn btn-theme" id="themeBtn" onclick="toggleTheme()">🌗</button>
         <button class="hud-btn" onclick="togglePause()">⏸ MENU</button>
         <button class="hud-btn btn-theme" onclick="toggleHelp()">?</button>
+    </div>
+
+    <div id="activeEffectsContainer" class="effects-container">
     </div>
 
     <div class="memory-game" id="gameBoard"></div>
