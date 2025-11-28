@@ -149,7 +149,7 @@ let isPoisonActive = false;
 let isShyGuyActive = false;
 let shyguyHandler = null;
 let shyguyTimeout = null;
-
+let isStarActive = false; // NOUVEAU
 let isCherryActive = false;
 let cherryHandler = null;
 let magicClickHandler = null;
@@ -1390,6 +1390,7 @@ function disableCards() {
 }
 
 function triggerStarEffect() {
+    isStarActive = true; // ON BLOQUE
     lockBoard = true;
 
     bgMusic.pause();
@@ -1403,6 +1404,8 @@ function triggerStarEffect() {
 
     setTimeout(() => {
         hiddenCards.forEach(card => card.classList.remove('flip'));
+
+        isStarActive = false; // ON DÉBLOQUE
         lockBoard = false;
 
         sfxStar.pause();
@@ -1411,7 +1414,6 @@ function triggerStarEffect() {
 
     }, duration);
 }
-
 function triggerBowserEffect() {
     isBowserActive = true;
     lockBoard = true;
@@ -1517,7 +1519,9 @@ function resetBoard() {
     firstCard = null;
     secondCard = null;
 
-    if (!isBowserActive && !isIceActive) lockBoard = false;
+    // --- FIX : On ajoute !isStarActive pour ne pas déverrouiller pendant l'étoile ---
+    if (!isBowserActive && !isIceActive && !isStarActive) lockBoard = false;
+    // ------------------------------------------------------------------------------
 
     if (ghostMode === 2) {
         const board = document.getElementById('gameBoard');
@@ -1578,6 +1582,14 @@ function handleVictory() {
 
     playSound(sfxWin);
     launchConfetti();
+
+    // --- COMPTEUR VICTOIRES ---
+    if (['easy', 'medium', 'hard'].includes(currentLevelKey)) {
+        const winKey = `mario_wins_${currentLevelKey}`;
+        let currentWins = parseInt(localStorage.getItem(winKey) || 0);
+        currentWins++;
+        localStorage.setItem(winKey, currentWins);
+    }
 
     const key = `mario_best_${currentLevelKey}`;
     const currentBest = parseInt(localStorage.getItem(key)) || 0;
@@ -1663,43 +1675,29 @@ function launchConfetti() {
 
 function triggerFireFlowerEffect() {
     // 1. On récupère toutes les cartes encore en jeu
-    const activeCards = Array.from(document.querySelectorAll('.memory-card:not(.matched):not(.flip)'));
+    const activeCards = Array.from(document.querySelectorAll('.memory-card:not(.matched):not(.flip):not(.chained-shake)'));
 
-    // 2. On regroupe les cartes par paires pour analyser leur état
+    // 2. Sécurité : Si pas assez de cartes libres, on prend tout (même enchaînées)
+    let candidates = activeCards;
+    if (candidates.length < 2) {
+        candidates = Array.from(document.querySelectorAll('.memory-card:not(.matched):not(.flip)'));
+    }
+
+    // 3. On regroupe par paires
     const pairs = {};
-    activeCards.forEach(card => {
+    candidates.forEach(card => {
         const name = card.dataset.name;
         if (!pairs[name]) pairs[name] = [];
         pairs[name].push(card);
     });
 
-    // 3. On trie les paires en deux catégories
-    const cleanPairs = [];   // Paires où AUCUNE carte n'est enchaînée
-    const dirtyPairs = [];   // Paires où AU MOINS UNE carte est enchaînée
-
-    Object.values(pairs).forEach(pair => {
-        // Sécurité : on ne traite que les vraies paires complètes (2 cartes)
-        if (pair.length === 2) {
-            const isChainA = pair[0].classList.contains('chained-shake');
-            const isChainB = pair[1].classList.contains('chained-shake');
-
-            if (!isChainA && !isChainB) {
-                cleanPairs.push(pair);
-            } else {
-                dirtyPairs.push(pair);
-            }
-        }
-    });
-
-    // 4. CHOIX DE LA PAIRE CIBLE
+    // 4. On cherche une paire complète (2 cartes)
     let targetPair = null;
+    const pairKeys = Object.keys(pairs).filter(key => pairs[key].length === 2);
 
-    if (cleanPairs.length > 0) {
-        // PRIORITÉ ABSOLUE : On prend une paire propre au hasard
-        targetPair = cleanPairs[Math.floor(Math.random() * cleanPairs.length)];
-    } else if (dirtyPairs.length > 0) {
-        // DERNIER RECOURS : Plus rien de libre, on prend une paire enchaînée (et on brisera la chaîne)
-        targetPair = dirtyPairs[Math.floor(Math.random() * dirtyPairs.length)];
+    if (pairKeys.length > 0) {
+        const randomKey = pairKeys[Math.floor(Math.random() * pairKeys.length)];
+        targetPair = pairs[randomKey];
     }
 
     // 5. Exécution de l'effet
@@ -1709,9 +1707,16 @@ function triggerFireFlowerEffect() {
 
         setTimeout(() => {
             targetPair.forEach(card => {
-                // On nettoie la chaîne (si c'était une dirtyPair)
+                // --- FIX VISUEL CRITIQUE ---
+                // On supprime le style "transform" (Tilt 3D) qui pourrait bloquer le retournement
+                card.style.transform = '';
+                card.classList.remove('tilting');
+                // ---------------------------
+
+                // On nettoie la chaîne si nécessaire
                 card.classList.remove('chained-shake');
 
+                // On retourne et valide
                 card.classList.add('flip');
                 card.classList.add('matched');
                 card.querySelector('.front-face').style.background = '#ffdcb0';
@@ -1720,10 +1725,9 @@ function triggerFireFlowerEffect() {
 
             matchCount++;
 
-            // --- FIX : MISE A JOUR DE LA BARRE DE PROGRESSION ---
+            // Mise à jour barre de progression
             let progress = (matchCount / totalPairs) * 100;
             document.getElementById('progressBar').style.width = progress + '%';
-            // ---------------------------------------------------
 
             score += 100 * scoreMultiplier;
             scoreDisplay.innerText = score;
@@ -1830,7 +1834,7 @@ function triggerKamekEffect() {
 function resetBestScores() {
     if (confirm("Es-tu sûr de vouloir effacer tous les records ?")) {
         Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('mario_best_')) {
+            if (key.startsWith('mario_best_') || key.startsWith('mario_wins_')) {
                 localStorage.removeItem(key);
             }
         });
@@ -2077,6 +2081,7 @@ function triggerShyGuyEffect() {
                 let moveX = Math.cos(angle) * force;
                 let moveY = Math.sin(angle) * force;
 
+                // --- FIX POISON : Inversion si poison actif ---
                 if (isPoisonActive) {
                     moveX = -moveX;
                     moveY = -moveY;
@@ -2212,7 +2217,6 @@ function triggerCherryEffect() {
 
                 if (clickable && !clickable.classList.contains('matched') && !clickable.classList.contains('flip')) {
                     clickable.click();
-
                     fakeCursor.style.transform = "scale(0.8)";
                     setTimeout(() => fakeCursor.style.transform = "scale(1)", 100);
                 }
@@ -2250,3 +2254,74 @@ function triggerCherryEffect() {
     }, 15000);
 }
 
+// --- NOUVELLE FONCTION : GESTION VISUELLE DES EFFETS ---
+function showStatusIcon(type, duration, imageSrc) {
+    if (!activeEffectsContainer) return;
+
+    const badge = document.createElement('div');
+    badge.classList.add('effect-badge');
+    badge.classList.add(`effect-${type}`); // Permet couleur bordure spécifique
+
+    // Image de l'effet
+    const img = document.createElement('img');
+    img.src = imageSrc;
+    badge.appendChild(img);
+
+    // Barre de timer (Overlay qui descend)
+    const timerBar = document.createElement('div');
+    timerBar.classList.add('effect-timer');
+    // On utilise transition CSS pour l'animation fluide
+    timerBar.style.transition = `height ${duration}ms linear`;
+    badge.appendChild(timerBar);
+
+    activeEffectsContainer.appendChild(badge);
+
+    // Déclenchement animation (petit délai pour que le DOM prenne en compte)
+    setTimeout(() => {
+        timerBar.style.height = '0%';
+    }, 50);
+
+    // Suppression auto à la fin
+    setTimeout(() => {
+        if (badge && badge.parentNode) {
+            badge.style.opacity = '0';
+            badge.style.transform = 'scale(0)';
+            setTimeout(() => badge.remove(), 300); // Temps de l'anim de sortie
+        }
+    }, duration);
+}
+
+// --- EFFET PARTICULES AU CLIC (STAR BITS) ---
+document.addEventListener('click', (e) => {
+    // On ne déclenche pas si on clique sur un bouton (pour ne pas gêner la lisibilité)
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+
+    const colors = ['#FBD000', '#ff3333', '#44D62C', '#049CD8', '#ffffff'];
+    const particleCount = 8; // Nombre de particules par clic
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('click-particle');
+
+        // Position initiale (sous la souris)
+        particle.style.left = e.clientX + 'px';
+        particle.style.top = e.clientY + 'px';
+
+        // Couleur aléatoire
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        // Direction aléatoire
+        const xDir = (Math.random() - 0.5) * 100; // Ecart horizontal
+        const yDir = (Math.random() - 0.5) * 100; // Ecart vertical
+
+        particle.style.setProperty('--x', `${xDir}px`);
+        particle.style.setProperty('--y', `${yDir}px`);
+
+        document.body.appendChild(particle);
+
+        // Nettoyage après l'animation (0.6s)
+        setTimeout(() => {
+            particle.remove();
+        }, 600);
+    }
+});
