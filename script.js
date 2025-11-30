@@ -144,6 +144,7 @@ let isGameOver = false;
 let isBowserActive = false;
 let ghostMode = 0;
 let blooperMode = 0;
+let isTimerFrozen = false; // Bonus Fleur de Glace
 let isIceActive = false;
 let isChompActive = false;
 let isTinyMode = false;
@@ -166,7 +167,9 @@ let inventory = JSON.parse(localStorage.getItem('mario_inventory')) || {
     mushroom: 0,
     clock: 0,
     star: 0,
-    fireflower: 0
+    fireflower: 0,
+    iceflower: 0,
+    luckyblock: 0
 };
 
 // Migration simple validation si l'objet n'existe pas
@@ -174,6 +177,8 @@ if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
 if (typeof inventory.clock === 'undefined') inventory.clock = 0;
 if (typeof inventory.star === 'undefined') inventory.star = 0;
 if (typeof inventory.fireflower === 'undefined') inventory.fireflower = 0;
+if (typeof inventory.iceflower === 'undefined') inventory.iceflower = 0;
+if (typeof inventory.luckyblock === 'undefined') inventory.luckyblock = 0;
 
 // Mise à jour de l'affichage des pièces au chargement
 document.addEventListener('DOMContentLoaded', () => {
@@ -561,6 +566,10 @@ function updateShopUI() {
     document.getElementById('stock-clock').innerText = "En poche: " + (inventory.clock || 0);
     document.getElementById('stock-star').innerText = "En poche: " + (inventory.star || 0);
     document.getElementById('stock-fireflower').innerText = "En poche: " + (inventory.fireflower || 0);
+    const stockIce = document.getElementById('stock-iceflower');
+    if(stockIce) stockIce.innerText = "En poche: " + (inventory.iceflower || 0);
+    const stockLucky = document.getElementById('stock-luckyblock');
+    if(stockLucky) stockLucky.innerText = "En poche: " + (inventory.luckyblock || 0);
 }
 
 function buyItem(itemType, price) {
@@ -589,7 +598,9 @@ function renderInGameInventory() {
         { id: 'mushroom', icon: 'images/1up.png', title: "Vie +1" },
         { id: 'clock', icon: 'images/clock.png', title: "+15s", customIcon: "⏰" }, // Emoji fallback si pas d'image
         { id: 'star', icon: 'images/star.png', title: "Révélation" },
-        { id: 'fireflower', icon: 'images/fireflower.png', title: "Fleur de Feu" }
+        { id: 'fireflower', icon: 'images/fireflower.png', title: "Fleur de Feu" },
+        { id: 'iceflower', icon: 'images/iceflower.png', title: "Gèle le chrono (10s)" },
+        { id: 'luckyblock', icon: 'images/block.png', title: "Bloc Surprise !" }
     ];
 
     items.forEach(item => {
@@ -638,6 +649,53 @@ function useInventoryItem(type) {
         triggerStarEffect();
     } else if (type === 'fireflower') {
         triggerFireFlowerEffect();
+    } else if (type === 'iceflower') {
+        triggerIceTimeBonus();
+    } else if (type === 'luckyblock') {
+        triggerLuckyBlock();
+    }
+}
+
+function triggerIceTimeBonus() {
+    if (isTimerFrozen) return;
+
+    isTimerFrozen = true;
+    timerDisplay.style.color = "#00ffff"; // Indicate visual freeze
+    spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "CHRONO GELÉ ! ❄️", "#00ffff");
+    showStatusIcon('ice', 10000, 'images/iceflower.png');
+
+    // Play sound if available (reuse ice effect sound)
+    try {
+        const iceSfx = new Audio('audio/iceball.mp3');
+        iceSfx.volume = volumeSlider.value;
+        iceSfx.play().catch(() => {});
+    } catch (e) {}
+
+    setTimeout(() => {
+        isTimerFrozen = false;
+        timerDisplay.style.color = ""; // Reset color
+    }, 10000);
+}
+
+function triggerLuckyBlock() {
+    const rewards = ['coins', 'life', 'time', 'reveal'];
+    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+
+    spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2 - 50, "BLOC SURPRISE !", "#FFD700");
+    playSound(sfxCoin); // Default sound
+
+    if (reward === 'coins') {
+        sessionCoins += 30;
+        spawnCoin(window.innerWidth / 2, window.innerHeight / 2, 30);
+    } else if (reward === 'life') {
+        trigger1UpEffect();
+    } else if (reward === 'time') {
+        timeLeft += 20;
+        timerDisplay.innerText = timeLeft;
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "+20 SECONDES !", "#FBD000");
+        playSound(sfx1up);
+    } else if (reward === 'reveal') {
+        triggerStarEffect();
     }
 }
 
@@ -1112,6 +1170,7 @@ function launchGameLogic() {
     sessionCoins = 0;
 
     isPaused = false;
+    isTimerFrozen = false;
     timerDisplay.innerText = timeLeft;
     livesDisplay.innerText = lives;
     timerDisplay.classList.remove('time-urgent');
@@ -1193,7 +1252,7 @@ function launchGameLogic() {
 }
 
 function updateTimer() {
-    if (isPaused || isBowserActive) return;
+    if (isPaused || isBowserActive || isTimerFrozen) return;
     timeLeft--;
     checkDangerState();
     timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
