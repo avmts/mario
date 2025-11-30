@@ -24,13 +24,26 @@
     <audio id="sfxExplosion"><source src="audio/explosion.mp3" type="audio/mpeg"></audio>
     <audio id="sfxShyGuy"><source src="audio/shyguy.mp3" type="audio/mpeg"></audio>
     <audio id="sfxSwish"><source src="audio/swish.mp3" type="audio/mpeg"></audio>
+    <!-- Son pour l'achat -->
+    <audio id="sfxCoin"><source src="audio/coin.mp3" type="audio/mpeg"></audio>
 
     <div class="overlay active" id="startMenu">
         <div class="menu-box">
             <h2 style="margin-top:0">CHOISIS TON NIVEAU</h2>
+
+            <div class="wallet-display">
+                <img src="images/coin.png" alt="Pièce">
+                <span id="menuWallet">0</span>
+            </div>
+
             <button class="btn-level" onclick="openSelectionMenu('easy')">FACILE (5 Vies)</button>
             <button class="btn-level" onclick="openSelectionMenu('medium')">MOYEN (10 Vies)</button>
             <button class="btn-level" onclick="openSelectionMenu('hard')">DIFFICILE (15 Vies)</button>
+
+            <!-- BOUTON SHOP AJOUTÉ (Modifié avec l'image de Toad) -->
+            <button class="btn-level btn-shop" onclick="openShopMenu()">
+                <img src="images/toadshop.png" style="height: 28px; vertical-align: middle; margin-right: 5px; margin-bottom: 4px;"> TOAD SHOP
+            </button>
 
             <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
                 <button class="btn-level btn-custom" style="width: 48%; margin: 15px 0;" onclick="openCustomMenu()">🛠️ PERSO</button>
@@ -48,7 +61,85 @@
         </div>
     </div>
 
+    <!-- NOUVEAU MENU SHOP -->
+    <div class="overlay" id="shopMenu">
+        <div class="menu-box" style="max-width: 800px;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:15px;">
+                <!-- Image mise à jour pour le Toad Shop (cercle rouge retiré) -->
+                <img src="toadshop.jpg" style="height:100px; border-radius: 50%;">
+                <h2 style="margin:0; color:#E52521; font-size: 2.5rem; text-shadow: 2px 2px 0 #000;">TOAD SHOP</h2>
+            </div>
+            <p>Dépense tes pièces pour acheter des bonus utilisables en jeu !</p>
+
+            <div class="wallet-display large">
+                <img src="images/coin.png" alt="Pièce">
+                <span id="shopWallet">0</span>
+            </div>
+
+            <div class="shop-grid">
+                <!-- Item 1: Champignon -->
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/1up.png"></div>
+                    <div class="item-info">
+                        <h3>Champi Vie</h3>
+                        <p>+1 Vie en pleine partie.</p>
+                        <div class="price">200 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-mushroom">x0</span>
+                        <button class="btn-buy" onclick="buyItem('mushroom', 200)">ACHETER</button>
+                    </div>
+                </div>
+
+                <!-- Item 2: Montre -->
+                <div class="shop-item">
+                    <div class="item-icon"><span style="font-size:3rem">⏰</span></div>
+                    <div class="item-info">
+                        <h3>Chrono +</h3>
+                        <p>Ajoute +15 secondes.</p>
+                        <div class="price">150 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-clock">x0</span>
+                        <button class="btn-buy" onclick="buyItem('clock', 150)">ACHETER</button>
+                    </div>
+                </div>
+
+                <!-- Item 3: Etoile -->
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/star.png"></div>
+                    <div class="item-info">
+                        <h3>Super Étoile</h3>
+                        <p>Révèle tout pendant 3s.</p>
+                        <div class="price">500 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-star">x0</span>
+                        <button class="btn-buy" onclick="buyItem('star', 500)">ACHETER</button>
+                    </div>
+                </div>
+
+                <!-- Item 4: Fleur de Feu (NOUVEAU) -->
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/fireflower.png"></div>
+                    <div class="item-info">
+                        <h3>Fleur de Feu</h3>
+                        <p>Trouve une paire auto.</p>
+                        <div class="price">550 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-fireflower">x0</span>
+                        <button class="btn-buy" onclick="buyItem('fireflower', 550)">ACHETER</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-menu" style="margin-top: 20px;" onclick="goToMainMenu()">RETOUR</button>
+        </div>
+    </div>
+
     <div class="overlay" id="albumMenu">
+        <!-- ... (Contenu existant de l'album) ... -->
         <div class="menu-box" style="max-width: 800px;">
             <h2 style="margin-top:0; color:#FFD700;">ALBUM DE COLLECTION</h2>
             <p id="albumProgress">Progression : 0 / 0</p>
@@ -66,6 +157,7 @@
     </div>
 
     <div class="overlay" id="skinMenu">
+        <!-- ... (Contenu existant des skins) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0; color:#049CD8;">DOS DES CARTES</h2>
             <p>Gagne des parties pour débloquer des styles !</p>
@@ -104,6 +196,7 @@
     </div>
 
     <div class="overlay" id="bgMenu">
+        <!-- ... (Contenu existant du menu fond) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0; color:#FF5733;">PERSONNALISER LE FOND</h2>
 
@@ -131,6 +224,7 @@
     </div>
 
     <div class="overlay" id="musicMenu">
+        <!-- ... (Contenu existant du menu musique) ... -->
         <div class="menu-box" style="max-width: 500px;">
             <h2 style="margin-top:0; color:#9b59b6;">JUKEBOX MARIO 🎵</h2>
             <p>Choisis la musique de ta partie :</p>
@@ -145,6 +239,7 @@
     </div>
 
     <div class="overlay" id="customMenu">
+        <!-- ... (Contenu existant menu perso) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0; color:#9b59b6;">PARTIE PERSO</h2>
 
@@ -171,6 +266,7 @@
     </div>
 
     <div class="overlay" id="selectionMenu">
+        <!-- ... (Contenu existant sélection) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0">CHOISIS TON ÉQUIPE</h2>
             <p id="selectionTitle">Sélectionne 6 personnages</p>
@@ -202,6 +298,7 @@
     </div>
 
     <div class="overlay" id="helpMenu">
+        <!-- ... (Contenu existant aide) ... -->
         <div class="menu-box" style="max-width: 600px; text-align: left;">
             <h2 style="margin-top:0; color:#E52521; text-align: center;">GUIDE DES POUVOIRS</h2>
 
@@ -209,6 +306,7 @@
                 <img src="images/star.png" style="width: 50px; margin-right: 15px;">
                 <div><strong style="color: #FBD000;">SUPER ÉTOILE :</strong> Révèle toutes les cartes pendant un court instant.</div>
             </div>
+            <!-- ... (autres aides) ... -->
             <div style="display: flex; align-items: center; margin-bottom: 15px;">
                 <img src="images/fireflower.png" style="width: 50px; margin-right: 15px;">
                 <div><strong style="color: #ff4d4d;">FLEUR DE FEU :</strong> Lance une boule de feu qui trouve et valide une paire pour vous !</div>
@@ -291,6 +389,9 @@
             <div id="progressBar"></div>
         </div>
 
+        <!-- ZONE D'INVENTAIRE AJOUTÉE DANS LE HUD -->
+        <div id="inventoryContainer" class="inventory-container"></div>
+
         <div class="volume-control">
             <button class="btn-mute" id="muteBtn" onclick="toggleMute()">🔉</button>
             <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.3">
@@ -313,6 +414,8 @@
             <div class="score-row"><span>Paires & Combos :</span><span id="detailBase">0</span></div>
             <div class="score-row"><span>Bonus Rapidité :</span><span id="detailTime">0</span></div>
             <div class="score-row"><span>Bonus Survie :</span><span id="detailLife">0</span></div>
+            <!-- Ajout affichage pièces -->
+            <div class="score-row" style="color:#FBD000; font-weight:bold;"><span>Pièces gagnées :</span><span id="winCoins">0</span></div>
             <div class="score-total"><span>TOTAL :</span><span id="finalScore">0</span></div>
         </div>
 
@@ -327,6 +430,9 @@
     <div class="end-msg" id="loseMessage" style="background: rgba(0,0,0,0.9);">
         <h2 id="loseTitle" style="color: #ff4d4d;">GAME OVER</h2>
         <p id="loseText" style="font-size: 1.5rem;">Bowser a gagné...</p>
+        <!-- Ajout affichage pièces -->
+        <p style="color:#FBD000; font-weight:bold; font-size:1.2rem; margin-bottom:20px;">Pièces gagnées : <span id="loseCoins">0</span></p>
+
         <button class="btn-level" onclick="restartCurrentLevel()">Réessayer</button>
         <button class="btn-level" onclick="goToMainMenu()">Menu Principal</button>
     </div>
