@@ -388,6 +388,17 @@ h1 {
         background-color: #a569bd !important;
     }
 
+/* BOUTON SHOP */
+.btn-shop {
+    background-color: #e84393 !important; /* Rose foncé Toadette/Shop */
+    border-color: #ff9ff3 !important;
+    box-shadow: 0 5px 0 #c23679 !important;
+}
+
+    .btn-shop:hover {
+        background-color: #fd79a8 !important;
+    }
+
 .hud-btn {
     background: #E52521;
     color: white;
@@ -511,6 +522,185 @@ input[type=range] {
     max-width: 90%;
     max-height: 90vh;
     overflow-y: auto;
+}
+
+/* --- AFFICHAGE PORTE-MONNAIE --- */
+.wallet-display {
+    background: rgba(0,0,0,0.1);
+    border-radius: 20px;
+    padding: 5px 15px;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #333;
+    border: 2px solid #ccc;
+}
+
+    .wallet-display img {
+        width: 24px;
+        height: 24px;
+        margin-right: 5px;
+    }
+
+    .wallet-display.large {
+        font-size: 1.5rem;
+        padding: 10px 20px;
+        background: #FBD000;
+        border-color: #fff;
+    }
+
+/* --- STYLE SHOP GRID --- */
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.shop-item {
+    background: #f9f9f9;
+    border: 3px solid #ddd;
+    border-radius: 15px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+    .shop-item:hover {
+        transform: scale(1.03);
+        border-color: #e84393;
+    }
+
+.item-icon {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+    .item-icon img {
+        height: 50px;
+        filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+    }
+
+.item-info h3 {
+    margin: 5px 0;
+    font-size: 1.1rem;
+    color: #e84393;
+}
+
+.item-info p {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 5px 0;
+    min-height: 2.5em; /* Pour aligner */
+}
+
+.item-info .price {
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+    .item-info .price img {
+        width: 18px;
+        margin-left: 5px;
+    }
+
+.item-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stock {
+    font-size: 0.9rem;
+    background: #333;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.btn-buy {
+    background: #44D62C;
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 3px 0 #2e8b1d;
+}
+
+    .btn-buy:active {
+        transform: translateY(2px);
+        box-shadow: none;
+    }
+
+    .btn-buy:disabled {
+        background: #ccc;
+        color: #888;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+/* --- INVENTAIRE IN-GAME (HUD) --- */
+.inventory-container {
+    display: flex;
+    gap: 10px;
+    margin: 0 10px;
+    min-height: 40px; /* Réserve la place */
+}
+
+.inventory-btn {
+    position: relative;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s;
+}
+
+    .inventory-btn:hover {
+        background: rgba(255,255,255,0.4);
+        transform: scale(1.1);
+    }
+
+    .inventory-btn:active {
+        transform: scale(0.95);
+    }
+
+    .inventory-btn img {
+        width: 70%;
+        height: 70%;
+        object-fit: contain;
+    }
+
+.inv-count {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: #333;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    border-radius: 10px;
+    border: 1px solid white;
+    font-weight: bold;
 }
 
 /* ALBUM GRID & PREVIEW */
@@ -1081,7 +1271,9 @@ input[type=range] {
     aspect-ratio: 1 / 1;
     height: auto;
     -webkit-tap-highlight-color: transparent;
+    --card-scale: 1; /* Variable pour gérer l'échelle (normal) */
 }
+
     /* Effet Tilt 3D au survol */
     .memory-card.tilting {
         transition: transform 0.1s ease-out !important;
@@ -1091,6 +1283,14 @@ input[type=range] {
 
     .memory-card.flip {
         transform: rotateY(180deg);
+    }
+
+    /* --- FIX VISUEL CRITIQUE POUR L'ÉTOILE --- */
+    /* Cette règle force le retournement et ignore les transformations conflictuelles (Chomp, etc.) */
+    .memory-card.star-reveal {
+        transform: scale(var(--card-scale, 1)) rotateY(180deg) !important;
+        transition: transform 0.5s ease !important;
+        animation: none !important; /* Stop l'animation Chomp si active */
     }
 
 .front-face, .back-face {
@@ -1325,21 +1525,22 @@ body.chomp-flash::before {
     }
 }
 
+/* Animation CHOMP corrigée pour respecter l'échelle */
 @keyframes chainShake {
     10%, 90% {
-        transform: translate3d(-1px, 0, 0) rotate(-1deg);
+        transform: scale(var(--card-scale, 1)) translate3d(-1px, 0, 0) rotate(-1deg);
     }
 
     20%, 80% {
-        transform: translate3d(2px, 0, 0) rotate(1deg);
+        transform: scale(var(--card-scale, 1)) translate3d(2px, 0, 0) rotate(1deg);
     }
 
     30%, 50%, 70% {
-        transform: translate3d(-2px, 0, 0) rotate(-2deg);
+        transform: scale(var(--card-scale, 1)) translate3d(-2px, 0, 0) rotate(-2deg);
     }
 
     40%, 60% {
-        transform: translate3d(2px, 0, 0) rotate(2deg);
+        transform: scale(var(--card-scale, 1)) translate3d(2px, 0, 0) rotate(2deg);
     }
 }
 
@@ -1380,7 +1581,8 @@ body.thunder-flash::before {
 }
 
 .tiny-cards .memory-card {
-    transform: scale(0.6);
+    --card-scale: 0.6; /* Mise à jour de l'échelle pour l'animation */
+    transform: scale(var(--card-scale));
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -1676,6 +1878,7 @@ button,
 .album-item,
 .music-option,
 .music-option span,
+.inventory-btn,
 input[type="range"],
 input[type="range"]::-webkit-slider-thumb,
 input[type="color"] {
