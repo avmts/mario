@@ -1946,7 +1946,8 @@ button,
 .inventory-btn,
 input[type="range"],
 input[type="range"]::-webkit-slider-thumb,
-input[type="color"] {
+input[type="color"],
+#clickerBlock {
     cursor: url('curseur/pointer.cur'), pointer !important;
 }
 

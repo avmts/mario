@@ -237,9 +237,15 @@ let inventory = JSON.parse(localStorage.getItem('mario_inventory')) || {
 let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     yoshiCount: 0,
     yoshiCost: 250,
+    peachCount: 0,
+    peachCost: 500,
     lastTime: Date.now(),
     coinBuffer: 0
 };
+
+// Migration si Peach n'existe pas encore dans les données sauvegardées
+if (typeof clickerData.peachCount === 'undefined') clickerData.peachCount = 0;
+if (typeof clickerData.peachCost === 'undefined') clickerData.peachCost = 500;
 
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
@@ -645,6 +651,7 @@ function openClickerMenu() {
 function updateClickerUI() {
     updateWalletDisplay();
 
+    // --- YOSHI ---
     const yoshiCostElem = document.getElementById('yoshiCost');
     const yoshiLevelElem = document.getElementById('yoshiLevel');
     const yoshiRateElem = document.getElementById('yoshiRateDisplay');
@@ -662,6 +669,26 @@ function updateClickerUI() {
         } else {
             btnBuyYoshi.disabled = true;
             btnBuyYoshi.style.opacity = "0.5";
+        }
+    }
+
+    // --- PEACH ---
+    const peachCostElem = document.getElementById('peachCost');
+    const peachLevelElem = document.getElementById('peachLevel');
+    const peachRateElem = document.getElementById('peachRateDisplay');
+    const btnBuyPeach = document.getElementById('btnBuyPeach');
+
+    if (peachCostElem) peachCostElem.innerText = clickerData.peachCost;
+    if (peachLevelElem) peachLevelElem.innerText = clickerData.peachCount;
+    if (peachRateElem) peachRateElem.innerText = (clickerData.peachCount * 2) + " pièce(s)";
+
+    if (btnBuyPeach) {
+        if (totalCoins >= clickerData.peachCost) {
+            btnBuyPeach.disabled = false;
+            btnBuyPeach.style.opacity = "1";
+        } else {
+            btnBuyPeach.disabled = true;
+            btnBuyPeach.style.opacity = "0.5";
         }
     }
 }
@@ -699,6 +726,25 @@ function buyYoshi() {
         updateClickerUI();
         saveEconomy();
 
+        const msg = clickerData.yoshiCount > 1 ? "YOSHI AMÉLIORÉ !" : "YOSHI RECRUTÉ !";
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#44D62C");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
+function buyPeach() {
+    if (totalCoins >= clickerData.peachCost) {
+        totalCoins -= clickerData.peachCost;
+        clickerData.peachCount++;
+        clickerData.peachCost += 50;
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.peachCount > 1 ? "PEACH AMÉLIORÉE !" : "PEACH RECRUTÉE !";
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#ff69b4");
         spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "YOSHI RECRUTÉ !", "#44D62C");
     } else {
         playSound(document.getElementById('sfxBowser'));
@@ -706,6 +752,12 @@ function buyYoshi() {
 }
 
 function clickerLoop() {
+    const yoshiRate = clickerData.yoshiCount; // 1 par minute par yoshi
+    const peachRate = clickerData.peachCount * 2; // 2 par minute par peach
+    const totalRatePerMinute = yoshiRate + peachRate;
+
+    if (totalRatePerMinute > 0) {
+        const coinsPerSecond = totalRatePerMinute / 60;
     if (clickerData.yoshiCount > 0) {
         // Taux : yoshiCount pièces par minute
         // Par seconde : yoshiCount / 60
@@ -718,6 +770,11 @@ function clickerLoop() {
             totalCoins += gain;
             clickerData.coinBuffer -= gain;
 
+            // Mise à jour visuelle globale
+            updateWalletDisplay();
+
+            // Si on est dans le menu clicker, on met à jour l'UI spécifique
+            if (clickerMenu.classList.contains('active')) {
             // Si on est dans le menu clicker, on met à jour l'affichage
             if (clickerMenu.classList.contains('active')) {
                 updateWalletDisplay();
@@ -737,6 +794,14 @@ function clickerLoop() {
 document.addEventListener('DOMContentLoaded', () => {
     const now = Date.now();
     const diffMs = now - (clickerData.lastTime || now);
+
+    const yoshiRate = clickerData.yoshiCount;
+    const peachRate = (clickerData.peachCount || 0) * 2;
+    const totalRatePerMinute = yoshiRate + peachRate;
+
+    if (diffMs > 0 && totalRatePerMinute > 0) {
+        const diffMinutes = diffMs / 60000;
+        const offlineGains = Math.floor(diffMinutes * totalRatePerMinute);
     if (diffMs > 0 && clickerData.yoshiCount > 0) {
         const diffMinutes = diffMs / 60000;
         const offlineGains = Math.floor(diffMinutes * clickerData.yoshiCount);
