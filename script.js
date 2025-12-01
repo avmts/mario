@@ -7,11 +7,13 @@ const characterNames = [
     'ninji', 'toadette', 'blooper', 'hammerbro', 'kamek',
     'koopakid', 'monty', 'pauline', 'pompom', 'shyguy',
     'skelerex', 'spike', 'bobomb', 'iceflower', '1up',
-    'chainchomp', 'lightning', 'poison', 'cherry'
+    'chainchomp', 'lightning', 'poison', 'cherry',
+    // AJOUT DES BÉBÉS ICI
+    'babywario', 'babypeach', 'babyluigi', 'babydaisy', 'babymario', 'babyharmony'
 ];
 const allCharacters = characterNames.map(name => ({ name: name, img: `images/${name}.png` }));
 
-// --- TRADUCTION DES NOMS (FRANÇAIS - CORRIGÉ) ---
+// --- TRADUCTION DES NOMS (FRANÇAIS) ---
 const frenchNames = {
     'mario': "Mario", 'luigi': "Luigi", 'peach': "Princesse Peach",
     'bowser': "Bowser", 'yoshi': "Yoshi", 'star': "Super Étoile",
@@ -26,7 +28,65 @@ const frenchNames = {
     'skelerex': "Skelerex", 'spike': "Spike", 'bobomb': "Bob-omb",
     'iceflower': "Fleur de Glace", '1up': "Champignon 1-Up",
     'chainchomp': "Chomp", 'lightning': "Éclair", 'poison': "Champi Poison",
-    'cherry': "Double Cerise"
+    'cherry': "Double Cerise",
+    // AJOUT DES NOMS FRANÇAIS ICI
+    'babywario': "Bébé Wario",
+    'babypeach': "Bébé Peach",
+    'babyluigi': "Bébé Luigi",
+    'babydaisy': "Bébé Daisy",
+    'babymario': "Bébé Mario",
+    'babyharmony': "Bébé Harmonie"
+};
+
+// --- DONNÉES DE L'ALBUM (BIO & EFFETS) ---
+const ALBUM_DATA = {
+    'mario': { bio: "L'emblématique plombier italo-américain originaire de Brooklyn qui est devenu le héros éternel du Royaume Champignon depuis 1985. Maître des power-ups et des sauts acrobatiques, il a sauvé la Princesse Peach d'innombrables fois à travers plus de 200 jeux.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'luigi': { bio: "Le frère cadet de Mario, légèrement plus grand et reconnaissable à sa palette verte. Introduit comme joueur 2 dans Mario Bros., il s'est distingué avec sa propre franchise Luigi's Mansion où il chasse les fantômes avec l'Ectoblast 3000 du Professeur K. Tastroff.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'peach': { bio: "La souveraine bienveillante du Royaume Champignon, descendante d'une lignée royale millénaire. Contrairement à sa réputation de demoiselle en détresse, elle maîtrise des pouvoirs émotionnels et a prouvé ses talents de combattante dans Super Princess Peach et Super Mario 3D World.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'bowser': { bio: "Le Roi Koopa, antagoniste suprême de l'univers Mario depuis 1985, connu sous le nom de Kuppa au Japon. Doté d'une force colossale dépassant même Wario et DK, il possède une résistance légendaire aux chutes dans la lave et maîtrise la magie noire pour invoquer la foudre et se téléporter", effect: "PIÈGE : Mélange les cartes restantes.", type: 'malus' },
+    'yoshi': { bio: "Le dinosaure vert de l'espèce Yoshi, originaire de l'île des Yoshis. Fidèle monture de Mario depuis Super Mario World, il possède une langue extensible redoutable et peut transformer ce qu'il avale en œufs projectiles.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'star': { bio: "La légendaire Super Star, power-up ultime conférant l'invincibilité temporaire accompagnée du thème musical iconique.", effect: "BONUS : Révèle toutes les cartes (3s).", type: 'bonus' },
+    'toad': { bio: "Représentant du peuple champignon Kinopio qui habite le Royaume Champignon. Serviteur loyal de Peach, il a prouvé son courage dans Captain Toad: Treasure Tracker où il part à l'aventure malgré son incapacité à sauter.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'wario': { bio: "L'anti-Mario cupide vêtu de jaune et violet, créé comme rival de Mario dans Super Mario Land 2. Obsédé par l'argent et propriétaire de WarioWare Inc., il possède une force surhumaine rivalisant presque avec celle de Bowser.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'waluigi': { bio: "Le mystérieux partenaire de Wario, rival maigrichon de Luigi créé spécifiquement pour Mario Tennis. Ses jambes démesurément puissantes lui permettent de battre Bowser d'un seul coup de pied, faisant de lui un adversaire redoutable malgré son statut de personnage secondaire.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'dk': { bio: "Le puissant gorille héritier du titre DK, petit-fils du Donkey Kong original devenu Cranky Kong. Gardien de l'île DK et de la réserve de bananes, il possède une force colossale et maîtrise les attaques au sol Ground Pound.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'koopa': { bio: "Les tortues bipèdes de l'armée Koopa, disponibles en variantes vertes et rouges. Leur carapace devient un projectile réutilisable une fois éjecté par un saut.​", effect: "Aucun effet spécial.", type: 'neutral' },
+    'goomba': { bio: "L'ennemi iconique en forme de champignon marron, traître du Royaume Champignon ayant rejoint l'armée de Bowser. Premier obstacle de Super Mario Bros., écrasable d'un simple saut.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'fireflower': { bio: "Le Fire Flower, transformation classique permettant de lancer des boules de feu depuis Super Mario Bros..", effect: "BONUS : Trouve une paire automatiquement.", type: 'bonus' },
+    'ghost': { bio: "Les fantômes Boo Diddly timides issus des Boos Mansion. Ils se figent et se cachent le visage quand on les regarde directement mais attaquent vicieusement quand on leur tourne le dos.", effect: "PIÈGE : Rend l'écran flou (Boo).", type: 'malus' },
+    'bullet': { bio: "Les missiles anthropomorphes Bullet Bill de l'arsenal militaire Koopa. Tirés depuis des Bill Blaster, ils foncent en ligne droite avec une détermination implacable.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'bowserjr': { bio: "Le fils unique de Bowser, héritier audacieux du trône Koopa introduit dans Super Mario Sunshine. Brillant inventeur plus intelligent que son père selon ses trophées Smash Bros., il pilote le Junior Clown Car et manie le Magic Paintbrush avec lequel il s'est déguisé en Shadow Mario.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'diddyk': { bio: "Le jeune singe coéquipier agile de DK, introduit dans Donkey Kong Country. Équipé de son jetpack signature, il compense sa petite taille par sa rapidité et ses capacités acrobatiques.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'daisy': { bio: "La princesse énergique du royaume de Sarasaland, apparue pour la première fois dans Super Mario Land sur Game Boy. Plus athlétique et extravertie que Peach, elle excelle dans les jeux de sport Mario.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'birdo': { bio: "La créature rose ressemblant à un dinosaure-autruche, cracheuse d'œufs par sa bouche-trompe. Originellement boss de Super Mario Bros. 2, devenue alliée et partenaire de Yoshi.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'harmony': { bio: "Le personnage étoilé lié à la mélodie cosmique du royaume.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'ninji': { bio: "Les petits ninjas noirs bondissants apparus dans Super Mario Bros. 2. Leurs sauts en zigzag imprévisibles les rendent difficiles à anticiper.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'toadette': { bio: "Membre féminine de l'espèce Toad, reconnaissable à ses couettes roses et son gilet. Introduite dans Mario Kart: Double Dash!!, elle peut se transformer en Peachette grâce à la Super Couronne.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'blooper': { bio: "Les calmars blancs flottants, ennemis aquatiques depuis Super Mario Bros.. Leur mouvement ondulatoire caractéristique les rend imprévisibles dans l'eau.", effect: "PIÈGE : Tache l'écran d'encre noire.", type: 'malus' },
+    'hammerbro': { bio: "Les Hammer Bros, élite de l'armée Koopa équipés de casques et lançant des marteaux en arc parabolique. Parmi les ennemis terrestres les plus dangereux de la franchise.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'kamek': { bio: "Le puissant Magikoopa sorcier portant des lunettes bleues, conseiller fidèle de Bowser depuis Yoshi's Island. C'est lui qui a élevé Bowser depuis son enfance et utilise sa magie pour transformer des ennemis ordinaires en boss géants.", effect: "PIÈGE : Échange la place de cartes.", type: 'malus' },
+    'koopakid': { bio: "Les mini-Bowser verts créés par magie, apparaissant principalement dans la série Mario Party. Ils imitent les actions du roi Koopa et harcèlent les joueurs sur les plateaux.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'monty': { bio: "Les Monty Moles, taupes fouisseuses surgissant des sols pour lancer des pierres. Habitants naturels des niveaux souterrains et désertiques.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'pauline': { bio: "Le tout premier amour de Mario, kidnappée par Donkey Kong dans le jeu arcade de 1981. Devenue maire de New Donk City dans Super Mario Odyssey, elle chante l'inoubliable 'Jump Up, Super Star!'", effect: "Aucun effet spécial.", type: 'neutral' },
+    'pompom': { bio: "La Koopa femelle rose agile armée de boomerangs, partenaire de Boom Boom introduite dans Super Mario 3D Land. Elle exécute des acrobaties aériennes impressionnantes au combat.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'shyguy': { bio: "Les Shy Guys masqués de rouge, originaires de Yume Kōjō: Doki Doki Panic adopté comme Super Mario Bros. 2. Leur véritable visage sous le masque reste l'un des mystères de l'univers Mario.", effect: "PIÈGE : Les cartes fuient la souris !", type: 'malus' },
+    'skelerex': { bio: "Les Dry Bones, squelettes Koopa immortels qui se reconstituent après avoir été piétinés. Résidents des châteaux et forteresses, immunisés aux boules de feu.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'spike': { bio: "Les Koopa verts lanceurs de boules à pics, apparus dans Super Mario Bros. 3. Ils extraient les projectiles hérissés de leur bouche avant de les cracher.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'bobomb': { bio: "Les bombes ambulantes à clé dorsale, membres explosifs de l'armée Koopa. Après activation, ils déambulent quelques secondes avant d'exploser, endommageant tout dans leur périmètre.", effect: "PIÈGE : Explose et retire 1 vie !", type: 'malus' },
+    'iceflower': { bio: "L'Ice Flower apparue dans New Super Mario Bros. Wii, conférant le pouvoir de geler les ennemis en Ice Blocks.", effect: "PIÈGE : Gèle l'écran quelques secondes.", type: 'malus' },
+    '1up': { bio: "Le 1-Up Mushroom vert octroyant une vie supplémentaire, trésor précieux caché dans les niveaux.", effect: "BONUS : Donne +1 Vie.", type: 'bonus' },
+    'chainchomp': { bio: "Les Chain Chomps, boules métalliques dentées enchaînées qui tentent frénétiquement de mordre tout ce qui passe à portée. Leur comportement rappelle celui de chiens de garde enragés.", effect: "PIÈGE : Enchaîne et bloque des cartes.", type: 'malus' },
+    'lightning': { bio: "Le Lightning Bolt des Mario Kart, rétrécissant temporairement tous les adversaires simultanément.", effect: "PIÈGE : Rétrécit toutes les cartes !", type: 'malus' },
+    'poison': { bio: "Le Poison Mushroom violet maléfique de Super Mario Bros.: The Lost Levels, provoquant le rétrécissement ou la perte d'une vie.", effect: "PIÈGE : Renverse l'écran (Tête en bas).", type: 'malus' },
+    'cherry': { bio: "La Double Cherry de Super Mario 3D World, créant un clone contrôlable du personnage pour multiplier la puissance.", effect: "PIÈGE : Dédouble votre curseur !", type: 'malus' },
+
+    // AJOUT DES DESCRIPTIONS POUR LES BÉBÉS
+    'babywario': { bio: "Wario quand il était bébé. Déjà très grincheux et avare !", effect: "Aucun effet spécial.", type: 'neutral' },
+    'babypeach': { bio: "La princesse Peach bébé. Elle pleure beaucoup mais est adorable.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'babyluigi': { bio: "Luigi tout petit. Il est déjà très peureux même en couche !", effect: "Aucun effet spécial.", type: 'neutral' },
+    'babydaisy': { bio: "La princesse Daisy bébé. Toujours aussi énergique !", effect: "Aucun effet spécial.", type: 'neutral' },
+    'babymario': { bio: "Mario bébé. Il a vécu de grandes aventures sur le dos de Yoshi.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'babyharmony': { bio: "La petite Harmonie avant qu'elle ne veille sur les étoiles.", effect: "Aucun effet spécial.", type: 'neutral' }
 };
 
 // --- LISTE DES MUSIQUES ---
@@ -826,8 +886,12 @@ function openAlbumMenu() {
 function renderAlbumGrid() {
     const grid = document.getElementById('albumGrid');
     const progressText = document.getElementById('albumProgress');
+
+    // Nouveaux éléments du DOM
     const previewImg = document.getElementById('previewImg');
     const previewName = document.getElementById('previewName');
+    const previewEffect = document.getElementById('previewEffect');
+    const previewBio = document.getElementById('previewBio');
 
     grid.innerHTML = '';
     let unlockedCount = 0;
@@ -839,25 +903,49 @@ function renderAlbumGrid() {
         const div = document.createElement('div');
         div.classList.add('album-item');
 
+        // Récupération des données ou valeurs par défaut
+        const info = ALBUM_DATA[char.name] || { bio: "Information inconnue.", effect: "Effet inconnu", type: "neutral" };
+        const fullName = frenchNames[char.name] || char.name.toUpperCase();
+
         if (isUnlocked) {
             div.classList.add('unlocked');
             div.innerHTML = `<img src="${char.img}" alt="${char.name}">`;
+
+            // Interaction au survol (Unlocked)
             div.onmouseenter = () => {
                 previewImg.src = char.img;
                 previewImg.style.opacity = '1';
                 previewImg.style.filter = 'none';
-                previewName.innerText = frenchNames[char.name] || char.name.toUpperCase();
-                previewName.style.color = '#000';
+
+                previewName.innerText = fullName;
+                previewName.style.color = '#333';
+
+                // Mise à jour de l'effet
+                previewEffect.innerText = info.effect;
+                previewEffect.className = `effect-desc type-${info.type}`; // Reset classes + add type
+                previewEffect.style.display = 'inline-block';
+
+                // Mise à jour de la bio
+                previewBio.innerText = info.bio;
+                previewBio.style.fontStyle = 'italic';
             };
         } else {
             div.classList.add('locked');
             div.innerHTML = `<img src="${char.img}" alt="???">`;
+
+            // Interaction au survol (Locked)
             div.onmouseenter = () => {
                 previewImg.src = char.img;
-                previewImg.style.opacity = '0.5';
+                previewImg.style.opacity = '0.4';
                 previewImg.style.filter = 'brightness(0)';
+
                 previewName.innerText = "???";
                 previewName.style.color = '#999';
+
+                // On cache l'effet et la bio pour garder le mystère
+                previewEffect.style.display = 'none';
+                previewBio.innerText = "Ce personnage n'a pas encore été découvert. Jouez pour le débloquer !";
+                previewBio.style.fontStyle = 'normal';
             };
         }
         grid.appendChild(div);
