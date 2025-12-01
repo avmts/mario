@@ -29,49 +29,6 @@ const frenchNames = {
     'cherry': "Double Cerise"
 };
 
-// --- DESCRIPTIONS LORE (ALBUM) ---
-const loreDescriptions = {
-    'mario': "Le héros courageux du Royaume Champignon. Toujours prêt à sauver la Princesse Peach des griffes de Bowser !",
-    'luigi': "Le frère de Mario. Un peu peureux, mais il saute plus haut que son frère et répond toujours présent !",
-    'peach': "La douce princesse du Royaume Champignon. Elle est souvent la cible des plans machiavéliques de Bowser.",
-    'bowser': "Le roi des Koopas. Il veut conquérir le royaume et kidnapper Peach. Il crache du feu et est très fort.",
-    'yoshi': "Un dinosaure amical et fidèle compagnon de Mario. Il adore manger des fruits et avaler ses ennemis.",
-    'star': "Une étoile magique qui rend invincible quiconque la touche pendant un court instant.",
-    'toad': "Un serviteur dévoué de la Princesse Peach. Il est petit mais court très vite pour aider Mario.",
-    'wario': "Le rival avare de Mario. Il ne pense qu'à l'or et aux trésors. Il est très costaud !",
-    'waluigi': "Le rival rusé de Luigi. Grand et maigre, il est expert en triche et adore jouer au tennis.",
-    'dk': "Donkey Kong est un gorille puissant qui adore les bananes. Il porte une cravate rouge emblématique.",
-    'koopa': "Un soldat de l'armée de Bowser. Il se cache dans sa carapace verte ou rouge quand il a peur.",
-    'goomba': "Un petit champignon grognon qui a trahi le Royaume pour rejoindre Bowser. L'ennemi le plus commun !",
-    'fireflower': "Une fleur spéciale qui donne le pouvoir de lancer des boules de feu brûlantes.",
-    'ghost': "Boo est un fantôme timide. Il attaque quand on lui tourne le dos mais se cache les yeux si on le regarde.",
-    'bullet': "Bill Balle est un projectile vivant tiré par des canons. Il fonce tout droit sans s'arrêter !",
-    'bowserjr': "Le fils unique de Bowser. Il veut rendre son père fier et porte souvent un bavoir décoré.",
-    'diddyk': "Le petit compagnon agile de Donkey Kong. Il porte une casquette rouge et adore l'aventure.",
-    'daisy': "La princesse de Sarasaland. Elle est énergique, sportive et amie proche de Peach.",
-    'birdo': "Une créature rose qui lance des œufs par sa bouche. Elle porte un gros nœud rouge sur la tête.",
-    'harmony': "La gardienne des étoiles qui veille sur le cosmos depuis son observatoire cométaire.",
-    'ninji': "Un petit ninja noir qui saute partout. Il essaie de passer inaperçu mais ses sauts le trahissent.",
-    'toadette': "Une Toad joyeuse et intelligente avec des nattes roses. Elle adore la musique et l'aventure.",
-    'blooper': "Un calamar blanc qui nage dans les océans. Il essaie d'attraper Mario avec ses tentacules.",
-    'hammerbro': "Un Koopa d'élite qui lance des marteaux avec précision. Très difficile à approcher !",
-    'kamek': "Le sorcier Magikoopa qui a élevé Bowser. Il utilise sa magie pour causer des problèmes à Mario.",
-    'koopakid': "Un sbire de Bowser qui lui ressemble beaucoup. On le voit souvent dans les Mario Party.",
-    'monty': "Une taupe malicieuse qui sort de terre par surprise pour jeter des cailloux ou barrer la route.",
-    'pauline': "La maire de New Donk City et ancienne amie de Mario. Elle est aussi une chanteuse talentueuse.",
-    'pompom': "Une ninja experte qui utilise des shurikens et des clones pour tromper ses adversaires.",
-    'shyguy': "Un petit personnage mystérieux portant un masque blanc. Personne ne sait ce qu'il y a dessous !",
-    'skelerex': "Un Koopa squelettique qui vit dans les donjons. Même en miettes, il finit toujours par se reformer.",
-    'spike': "Un petit monstre vert qui crache des boules à pointes pour attaquer ses ennemis.",
-    'bobomb': "Une bombe vivante avec une mèche sur la tête. Attention, elle explose au moindre contact !",
-    'iceflower': "Une fleur glacée qui donne le pouvoir de jeter des boules de glace pour geler les ennemis.",
-    '1up': "Un champignon vert rare qui donne une vie supplémentaire à celui qui le trouve. Très précieux !",
-    'chainchomp': "Une boule d'acier avec des dents acérées, attachée par une chaîne. Il aboie et mord tout ce qui bouge !",
-    'lightning': "Un éclair puissant qui peut rétrécir les adversaires pour les rendre minuscules et vulnérables.",
-    'poison': "Un champignon violet toxique. Contrairement aux autres, il blesse Mario au lieu de l'aider.",
-    'cherry': "Une cerise magique qui permet de créer un double de soi-même pour embrouiller l'ennemi."
-};
-
 // --- LISTE DES MUSIQUES ---
 const musicTracks = [
     { name: "Par Défaut (Selon niveau)", file: "default" },
