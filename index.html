@@ -40,7 +40,6 @@
             <button class="btn-level" onclick="openSelectionMenu('medium')">MOYEN (10 Vies)</button>
             <button class="btn-level" onclick="openSelectionMenu('hard')">DIFFICILE (15 Vies)</button>
 
-            <!-- BOUTON SHOP AJOUTÉ (Modifié avec l'image de Toad) -->
             <button class="btn-level btn-shop" onclick="openShopMenu()">
                 <img src="images/toadshop.png" style="height: 28px; vertical-align: middle; margin-right: 5px; margin-bottom: 4px;"> TOAD SHOP
             </button>
@@ -61,11 +60,9 @@
         </div>
     </div>
 
-    <!-- NOUVEAU MENU SHOP -->
     <div class="overlay" id="shopMenu">
         <div class="menu-box" style="max-width: 800px;">
             <div style="display:flex; align-items:center; justify-content:center; gap:15px;">
-                <!-- Image mise à jour pour le Toad Shop (cercle rouge retiré) -->
                 <img src="images/toadshop.png" style="height:100px; border-radius: 50%;">
                 <h2 style="margin:0; color:#E52521; font-size: 2.5rem; text-shadow: 2px 2px 0 #000;">TOAD SHOP</h2>
             </div>
@@ -77,7 +74,6 @@
             </div>
 
             <div class="shop-grid">
-                <!-- Item 1: Champignon -->
                 <div class="shop-item">
                     <div class="item-icon"><img src="images/1up.png"></div>
                     <div class="item-info">
@@ -91,7 +87,6 @@
                     </div>
                 </div>
 
-                <!-- Item 2: Montre -->
                 <div class="shop-item">
                     <div class="item-icon"><span style="font-size:3rem">⏰</span></div>
                     <div class="item-info">
@@ -105,7 +100,6 @@
                     </div>
                 </div>
 
-                <!-- Item 3: Etoile -->
                 <div class="shop-item">
                     <div class="item-icon"><img src="images/star.png"></div>
                     <div class="item-info">
@@ -119,7 +113,6 @@
                     </div>
                 </div>
 
-                <!-- Item 4: Fleur de Feu -->
                 <div class="shop-item">
                     <div class="item-icon"><img src="images/fireflower.png"></div>
                     <div class="item-info">
@@ -133,7 +126,6 @@
                     </div>
                 </div>
 
-                <!-- Item 5: Fleur de Glace -->
                 <div class="shop-item">
                     <div class="item-icon"><img src="images/iceflower.png"></div>
                     <div class="item-info">
@@ -147,7 +139,6 @@
                     </div>
                 </div>
 
-                <!-- Item 6: Bloc ? -->
                 <div class="shop-item" style="border-color: #FBD000; background: #fffde7;">
                     <div class="item-icon"><img src="images/block.png"></div>
                     <div class="item-info">
@@ -166,15 +157,26 @@
         </div>
     </div>
 
+    <!-- UPDATE ICI: Structure de l'album modifiée pour l'affichage image + texte -->
     <div class="overlay" id="albumMenu">
-        <!-- ... (Contenu existant de l'album) ... -->
         <div class="menu-box" style="max-width: 800px;">
             <h2 style="margin-top:0; color:#FFD700;">ALBUM DE COLLECTION</h2>
             <p id="albumProgress">Progression : 0 / 0</p>
 
             <div class="album-preview-box">
-                <img id="previewImg" src="images/block.png" alt="Aperçu">
-                <h3 id="previewName">Survole un sticker !</h3>
+                <!-- Conteneur Image à gauche -->
+                <div class="album-preview-img-container">
+                    <img id="previewImg" src="images/block.png" alt="Aperçu">
+                </div>
+
+                <!-- Conteneur Infos à droite -->
+                <div class="album-preview-info">
+                    <h3 id="previewName">???</h3>
+                    <!-- Effet affiché ici (Bonus/Piège) -->
+                    <div id="previewEffect" class="effect-desc type-neutral">...</div>
+                    <!-- Description Bio affichée ici -->
+                    <p id="previewBio" class="bio-desc">Survole un sticker débloqué pour voir les détails !</p>
+                </div>
             </div>
 
             <div class="album-grid" id="albumGrid">
@@ -185,7 +187,6 @@
     </div>
 
     <div class="overlay" id="skinMenu">
-        <!-- ... (Contenu existant des skins) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0; color:#049CD8;">DOS DES CARTES</h2>
             <p>Gagne des parties pour débloquer des styles !</p>
@@ -224,7 +225,6 @@
     </div>
 
     <div class="overlay" id="bgMenu">
-        <!-- ... (Contenu existant du menu fond) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0; color:#FF5733;">PERSONNALISER LE FOND</h2>
 
@@ -252,7 +252,6 @@
     </div>
 
     <div class="overlay" id="musicMenu">
-        <!-- ... (Contenu existant du menu musique) ... -->
         <div class="menu-box" style="max-width: 500px;">
             <h2 style="margin-top:0; color:#9b59b6;">JUKEBOX MARIO 🎵</h2>
             <p>Choisis la musique de ta partie :</p>
@@ -267,13 +266,12 @@
     </div>
 
     <div class="overlay" id="customMenu">
-        <!-- ... (Contenu existant menu perso) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0; color:#9b59b6;">PARTIE PERSO</h2>
 
             <div style="margin: 15px 0; text-align: left;">
                 <div class="custom-label"><span>Paires</span> <b id="customPairsVal">8</b></div>
-                <input type="range" id="customPairs" class="custom-range" min="2" max="39" value="8" oninput="document.getElementById('customPairsVal').innerText = this.value">
+                <input type="range" id="customPairs" class="custom-range" min="2" max="45" value="8" oninput="document.getElementById('customPairsVal').innerText = this.value">
             </div>
 
             <div style="margin: 15px 0; text-align: left;">
@@ -294,7 +292,6 @@
     </div>
 
     <div class="overlay" id="selectionMenu">
-        <!-- ... (Contenu existant sélection) ... -->
         <div class="menu-box">
             <h2 style="margin-top:0">CHOISIS TON ÉQUIPE</h2>
             <p id="selectionTitle">Sélectionne 6 personnages</p>
@@ -326,7 +323,6 @@
     </div>
 
     <div class="overlay" id="helpMenu">
-        <!-- ... (Contenu existant aide) ... -->
         <div class="menu-box" style="max-width: 600px; text-align: left;">
             <h2 style="margin-top:0; color:#E52521; text-align: center;">GUIDE DES POUVOIRS</h2>
 
@@ -334,7 +330,6 @@
                 <img src="images/star.png" style="width: 50px; margin-right: 15px;">
                 <div><strong style="color: #FBD000;">SUPER ÉTOILE :</strong> Révèle toutes les cartes pendant un court instant.</div>
             </div>
-            <!-- ... (autres aides) ... -->
             <div style="display: flex; align-items: center; margin-bottom: 15px;">
                 <img src="images/fireflower.png" style="width: 50px; margin-right: 15px;">
                 <div><strong style="color: #ff4d4d;">FLEUR DE FEU :</strong> Lance une boule de feu qui trouve et valide une paire pour vous !</div>
@@ -417,7 +412,6 @@
             <div id="progressBar"></div>
         </div>
 
-        <!-- ZONE D'INVENTAIRE AJOUTÉE DANS LE HUD -->
         <div id="inventoryContainer" class="inventory-container"></div>
 
         <div class="volume-control">
@@ -442,7 +436,6 @@
             <div class="score-row"><span>Paires & Combos :</span><span id="detailBase">0</span></div>
             <div class="score-row"><span>Bonus Rapidité :</span><span id="detailTime">0</span></div>
             <div class="score-row"><span>Bonus Survie :</span><span id="detailLife">0</span></div>
-            <!-- Ajout affichage pièces -->
             <div class="score-row" style="color:#FBD000; font-weight:bold;"><span>Pièces gagnées :</span><span id="winCoins">0</span></div>
             <div class="score-total"><span>TOTAL :</span><span id="finalScore">0</span></div>
         </div>
@@ -458,7 +451,6 @@
     <div class="end-msg" id="loseMessage" style="background: rgba(0,0,0,0.9);">
         <h2 id="loseTitle" style="color: #ff4d4d;">GAME OVER</h2>
         <p id="loseText" style="font-size: 1.5rem;">Bowser a gagné...</p>
-        <!-- Ajout affichage pièces -->
         <p style="color:#FBD000; font-weight:bold; font-size:1.2rem; margin-bottom:20px;">Pièces gagnées : <span id="loseCoins">0</span></p>
 
         <button class="btn-level" onclick="restartCurrentLevel()">Réessayer</button>
