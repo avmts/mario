@@ -264,7 +264,7 @@ function updateWalletDisplay() {
     const menuWallet = document.getElementById('menuWallet');
     const shopWallet = document.getElementById('shopWallet');
     const clickerWallet = document.getElementById('clickerWallet');
-
+    
     if (menuWallet) menuWallet.innerText = Math.floor(totalCoins);
     if (shopWallet) shopWallet.innerText = Math.floor(totalCoins);
     if (clickerWallet) clickerWallet.innerText = Math.floor(totalCoins);
@@ -273,7 +273,7 @@ function updateWalletDisplay() {
 function saveEconomy() {
     localStorage.setItem('mario_total_coins', Math.floor(totalCoins));
     localStorage.setItem('mario_inventory', JSON.stringify(inventory));
-
+    
     // Sauvegarde du clicker
     clickerData.lastTime = Date.now();
     localStorage.setItem('mario_clicker_data', JSON.stringify(clickerData));
@@ -641,7 +641,7 @@ function openClickerMenu() {
     startMenu.classList.remove('active');
     clickerMenu.classList.add('active');
     updateClickerUI();
-
+    
     // Lancer la boucle de jeu du clicker si ce n'est pas déjà fait
     if (!window.clickerInterval) {
         window.clickerInterval = setInterval(clickerLoop, 1000);
@@ -650,18 +650,17 @@ function openClickerMenu() {
 
 function updateClickerUI() {
     updateWalletDisplay();
-
+    
     // --- YOSHI ---
     const yoshiCostElem = document.getElementById('yoshiCost');
     const yoshiLevelElem = document.getElementById('yoshiLevel');
     const yoshiRateElem = document.getElementById('yoshiRateDisplay');
     const btnBuyYoshi = document.getElementById('btnBuyYoshi');
-
+    
     if (yoshiCostElem) yoshiCostElem.innerText = clickerData.yoshiCost;
     if (yoshiLevelElem) yoshiLevelElem.innerText = clickerData.yoshiCount;
     if (yoshiRateElem) yoshiRateElem.innerText = clickerData.yoshiCount + " pièce(s)";
-
-    // Griser le bouton si pas assez d'argent
+    
     if (btnBuyYoshi) {
         if (totalCoins >= clickerData.yoshiCost) {
             btnBuyYoshi.disabled = false;
@@ -698,20 +697,20 @@ function clickBlock() {
     updateWalletDisplay();
     updateClickerUI(); // Pour mettre à jour l'état des boutons d'achat
     saveEconomy();
-
+    
     // Effets visuels
     const block = document.getElementById('clickerBlock');
     block.classList.remove('click-anim');
     void block.offsetWidth; // Trigger reflow
     block.classList.add('click-anim');
-
+    
     playSound(document.getElementById('sfxCoin'));
-
+    
     // Particules
     const rect = block.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-
+    
     spawnFloatingText(centerX, centerY - 50, "+1", "#FBD000");
     spawnParticle(centerX, centerY, 'burst');
 }
@@ -721,11 +720,11 @@ function buyYoshi() {
         totalCoins -= clickerData.yoshiCost;
         clickerData.yoshiCount++;
         clickerData.yoshiCost += 50;
-
+        
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
         saveEconomy();
-
+        
         const msg = clickerData.yoshiCount > 1 ? "YOSHI AMÉLIORÉ !" : "YOSHI RECRUTÉ !";
         spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#44D62C");
     } else {
@@ -738,14 +737,13 @@ function buyPeach() {
         totalCoins -= clickerData.peachCost;
         clickerData.peachCount++;
         clickerData.peachCost += 50;
-
+        
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
         saveEconomy();
-
+        
         const msg = clickerData.peachCount > 1 ? "PEACH AMÉLIORÉE !" : "PEACH RECRUTÉE !";
         spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#ff69b4");
-        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "YOSHI RECRUTÉ !", "#44D62C");
     } else {
         playSound(document.getElementById('sfxBowser'));
     }
@@ -758,28 +756,21 @@ function clickerLoop() {
 
     if (totalRatePerMinute > 0) {
         const coinsPerSecond = totalRatePerMinute / 60;
-    if (clickerData.yoshiCount > 0) {
-        // Taux : yoshiCount pièces par minute
-        // Par seconde : yoshiCount / 60
-        const coinsPerSecond = clickerData.yoshiCount / 60;
-
+        
         clickerData.coinBuffer += coinsPerSecond;
-
+        
         if (clickerData.coinBuffer >= 1) {
             const gain = Math.floor(clickerData.coinBuffer);
             totalCoins += gain;
             clickerData.coinBuffer -= gain;
-
+            
             // Mise à jour visuelle globale
             updateWalletDisplay();
-
+            
             // Si on est dans le menu clicker, on met à jour l'UI spécifique
             if (clickerMenu.classList.contains('active')) {
-            // Si on est dans le menu clicker, on met à jour l'affichage
-            if (clickerMenu.classList.contains('active')) {
-                updateWalletDisplay();
                 updateClickerUI();
-
+                
                 // Petit effet visuel discret sur le wallet
                 const wallet = document.getElementById('clickerWallet');
                 wallet.style.color = "#FBD000";
@@ -794,25 +785,22 @@ function clickerLoop() {
 document.addEventListener('DOMContentLoaded', () => {
     const now = Date.now();
     const diffMs = now - (clickerData.lastTime || now);
-
-    const yoshiRate = clickerData.yoshiCount;
+    
+    const yoshiRate = clickerData.yoshiCount; 
     const peachRate = (clickerData.peachCount || 0) * 2;
     const totalRatePerMinute = yoshiRate + peachRate;
 
     if (diffMs > 0 && totalRatePerMinute > 0) {
         const diffMinutes = diffMs / 60000;
         const offlineGains = Math.floor(diffMinutes * totalRatePerMinute);
-    if (diffMs > 0 && clickerData.yoshiCount > 0) {
-        const diffMinutes = diffMs / 60000;
-        const offlineGains = Math.floor(diffMinutes * clickerData.yoshiCount);
-
+        
         if (offlineGains > 0) {
             totalCoins += offlineGains;
             console.log(`Gains hors ligne : ${offlineGains} pièces`);
             // On pourrait afficher une popup ici
         }
     }
-
+    
     // Démarrer la boucle
     if (!window.clickerInterval) {
         window.clickerInterval = setInterval(clickerLoop, 1000);
