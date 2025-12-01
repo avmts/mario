@@ -148,6 +148,7 @@ const pauseMenu = document.getElementById('pauseMenu');
 const countdownOverlay = document.getElementById('countdownOverlay');
 const countdownText = document.getElementById('countdownText');
 const shopMenu = document.getElementById('shopMenu');
+const clickerMenu = document.getElementById('clickerMenu');
 
 // MENU FOND D'ECRAN
 const bgMenu = document.getElementById('bgMenu');
@@ -232,6 +233,14 @@ let inventory = JSON.parse(localStorage.getItem('mario_inventory')) || {
     mysteryblock: 0
 };
 
+// --- DONNÉES DU CLICKER ---
+let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
+    yoshiCount: 0,
+    yoshiCost: 250,
+    lastTime: Date.now(),
+    coinBuffer: 0
+};
+
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
 if (typeof inventory.clock === 'undefined') inventory.clock = 0;
@@ -248,13 +257,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateWalletDisplay() {
     const menuWallet = document.getElementById('menuWallet');
     const shopWallet = document.getElementById('shopWallet');
-    if (menuWallet) menuWallet.innerText = totalCoins;
-    if (shopWallet) shopWallet.innerText = totalCoins;
+    const clickerWallet = document.getElementById('clickerWallet');
+
+    if (menuWallet) menuWallet.innerText = Math.floor(totalCoins);
+    if (shopWallet) shopWallet.innerText = Math.floor(totalCoins);
+    if (clickerWallet) clickerWallet.innerText = Math.floor(totalCoins);
 }
 
 function saveEconomy() {
-    localStorage.setItem('mario_total_coins', totalCoins);
+    localStorage.setItem('mario_total_coins', Math.floor(totalCoins));
     localStorage.setItem('mario_inventory', JSON.stringify(inventory));
+
+    // Sauvegarde du clicker
+    clickerData.lastTime = Date.now();
+    localStorage.setItem('mario_clicker_data', JSON.stringify(clickerData));
 }
 
 // --- DESCRIPTIONS DES POUVOIRS ---
@@ -555,6 +571,7 @@ function goToMainMenu() {
 
     if (bgMenu) bgMenu.classList.remove('active');
     if (musicMenu) musicMenu.classList.remove('active');
+    if (clickerMenu) clickerMenu.classList.remove('active');
 
     // ARRET DE LA MUSIQUE
     bgMusic.pause();
@@ -589,6 +606,7 @@ function togglePause() {
         customMenu.classList.contains('active') ||
         skinMenu.classList.contains('active') ||
         shopMenu.classList.contains('active') ||
+        (clickerMenu && clickerMenu.classList.contains('active')) ||
         (bgMenu && bgMenu.classList.contains('active')) ||
         (musicMenu && musicMenu.classList.contains('active')) ||
         albumMenu.classList.contains('active') ||
@@ -611,6 +629,130 @@ function togglePause() {
         if (volumeSlider.value > 0 && !isBowserActive) bgMusic.play();
     }
 }
+
+// --- FONCTIONS MARIO CLICKER ---
+function openClickerMenu() {
+    startMenu.classList.remove('active');
+    clickerMenu.classList.add('active');
+    updateClickerUI();
+
+    // Lancer la boucle de jeu du clicker si ce n'est pas déjà fait
+    if (!window.clickerInterval) {
+        window.clickerInterval = setInterval(clickerLoop, 1000);
+    }
+}
+
+function updateClickerUI() {
+    updateWalletDisplay();
+
+    const yoshiCostElem = document.getElementById('yoshiCost');
+    const yoshiLevelElem = document.getElementById('yoshiLevel');
+    const yoshiRateElem = document.getElementById('yoshiRateDisplay');
+    const btnBuyYoshi = document.getElementById('btnBuyYoshi');
+
+    if (yoshiCostElem) yoshiCostElem.innerText = clickerData.yoshiCost;
+    if (yoshiLevelElem) yoshiLevelElem.innerText = clickerData.yoshiCount;
+    if (yoshiRateElem) yoshiRateElem.innerText = clickerData.yoshiCount + " pièce(s)";
+
+    // Griser le bouton si pas assez d'argent
+    if (btnBuyYoshi) {
+        if (totalCoins >= clickerData.yoshiCost) {
+            btnBuyYoshi.disabled = false;
+            btnBuyYoshi.style.opacity = "1";
+        } else {
+            btnBuyYoshi.disabled = true;
+            btnBuyYoshi.style.opacity = "0.5";
+        }
+    }
+}
+
+function clickBlock() {
+    totalCoins++;
+    updateWalletDisplay();
+    updateClickerUI(); // Pour mettre à jour l'état des boutons d'achat
+    saveEconomy();
+
+    // Effets visuels
+    const block = document.getElementById('clickerBlock');
+    block.classList.remove('click-anim');
+    void block.offsetWidth; // Trigger reflow
+    block.classList.add('click-anim');
+
+    playSound(document.getElementById('sfxCoin'));
+
+    // Particules
+    const rect = block.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    spawnFloatingText(centerX, centerY - 50, "+1", "#FBD000");
+    spawnParticle(centerX, centerY, 'burst');
+}
+
+function buyYoshi() {
+    if (totalCoins >= clickerData.yoshiCost) {
+        totalCoins -= clickerData.yoshiCost;
+        clickerData.yoshiCount++;
+        clickerData.yoshiCost += 50;
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "YOSHI RECRUTÉ !", "#44D62C");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
+function clickerLoop() {
+    if (clickerData.yoshiCount > 0) {
+        // Taux : yoshiCount pièces par minute
+        // Par seconde : yoshiCount / 60
+        const coinsPerSecond = clickerData.yoshiCount / 60;
+
+        clickerData.coinBuffer += coinsPerSecond;
+
+        if (clickerData.coinBuffer >= 1) {
+            const gain = Math.floor(clickerData.coinBuffer);
+            totalCoins += gain;
+            clickerData.coinBuffer -= gain;
+
+            // Si on est dans le menu clicker, on met à jour l'affichage
+            if (clickerMenu.classList.contains('active')) {
+                updateWalletDisplay();
+                updateClickerUI();
+
+                // Petit effet visuel discret sur le wallet
+                const wallet = document.getElementById('clickerWallet');
+                wallet.style.color = "#FBD000";
+                setTimeout(() => wallet.style.color = "", 200);
+            }
+            saveEconomy();
+        }
+    }
+}
+
+// Calculer les gains hors ligne au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    const now = Date.now();
+    const diffMs = now - (clickerData.lastTime || now);
+    if (diffMs > 0 && clickerData.yoshiCount > 0) {
+        const diffMinutes = diffMs / 60000;
+        const offlineGains = Math.floor(diffMinutes * clickerData.yoshiCount);
+
+        if (offlineGains > 0) {
+            totalCoins += offlineGains;
+            console.log(`Gains hors ligne : ${offlineGains} pièces`);
+            // On pourrait afficher une popup ici
+        }
+    }
+
+    // Démarrer la boucle
+    if (!window.clickerInterval) {
+        window.clickerInterval = setInterval(clickerLoop, 1000);
+    }
+});
 
 // --- FONCTIONS BOUTIQUE ---
 function openShopMenu() {
