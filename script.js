@@ -661,6 +661,7 @@ function updateClickerUI() {
     if (yoshiLevelElem) yoshiLevelElem.innerText = clickerData.yoshiCount;
     if (yoshiRateElem) yoshiRateElem.innerText = clickerData.yoshiCount + " pièce(s)";
 
+    // Griser le bouton si pas assez d'argent
     if (btnBuyYoshi) {
         if (totalCoins >= clickerData.yoshiCost) {
             btnBuyYoshi.disabled = false;
@@ -744,6 +745,7 @@ function buyPeach() {
 
         const msg = clickerData.peachCount > 1 ? "PEACH AMÉLIORÉE !" : "PEACH RECRUTÉE !";
         spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#ff69b4");
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "YOSHI RECRUTÉ !", "#44D62C");
     } else {
         playSound(document.getElementById('sfxBowser'));
     }
@@ -756,6 +758,10 @@ function clickerLoop() {
 
     if (totalRatePerMinute > 0) {
         const coinsPerSecond = totalRatePerMinute / 60;
+    if (clickerData.yoshiCount > 0) {
+        // Taux : yoshiCount pièces par minute
+        // Par seconde : yoshiCount / 60
+        const coinsPerSecond = clickerData.yoshiCount / 60;
 
         clickerData.coinBuffer += coinsPerSecond;
 
@@ -769,6 +775,9 @@ function clickerLoop() {
 
             // Si on est dans le menu clicker, on met à jour l'UI spécifique
             if (clickerMenu.classList.contains('active')) {
+            // Si on est dans le menu clicker, on met à jour l'affichage
+            if (clickerMenu.classList.contains('active')) {
+                updateWalletDisplay();
                 updateClickerUI();
 
                 // Petit effet visuel discret sur le wallet
@@ -793,6 +802,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (diffMs > 0 && totalRatePerMinute > 0) {
         const diffMinutes = diffMs / 60000;
         const offlineGains = Math.floor(diffMinutes * totalRatePerMinute);
+    if (diffMs > 0 && clickerData.yoshiCount > 0) {
+        const diffMinutes = diffMs / 60000;
+        const offlineGains = Math.floor(diffMinutes * clickerData.yoshiCount);
 
         if (offlineGains > 0) {
             totalCoins += offlineGains;
