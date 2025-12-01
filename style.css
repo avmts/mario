@@ -10,7 +10,6 @@
 }
 
 body.dark-mode {
-    /* Les couleurs de fond sont gérées par le JS via variables CSS */
     --hud-bg: rgba(255,255,255,0.15);
     --hud-border: #999;
 }
@@ -38,7 +37,6 @@ body {
     transition: background-color 0.5s, background-image 0.5s, transform 1s ease;
     overflow-x: hidden;
     cursor: url('curseur/cursor.cur'), auto;
-    /* Animation de base + Danger state gérés ici et plus bas */
     animation: scrollBg 4s linear infinite;
 }
 
@@ -598,7 +596,7 @@ input[type=range] {
     font-size: 0.85rem;
     color: #666;
     margin: 5px 0;
-    min-height: 2.5em; /* Pour aligner */
+    min-height: 2.5em;
 }
 
 .item-info .price {
@@ -658,7 +656,7 @@ input[type=range] {
     display: flex;
     gap: 10px;
     margin: 0 10px;
-    min-height: 40px; /* Réserve la place */
+    min-height: 40px;
 }
 
 .inventory-btn {
@@ -703,44 +701,122 @@ input[type=range] {
     font-weight: bold;
 }
 
-/* ALBUM GRID & PREVIEW */
-.album-preview-box {
-    height: 140px;
-    width: 100%;
+/* --- ALBUM GRID & PREVIEW (Mise à jour pour stabilité) --- */
+
+/* STABILISATION DE LA FENÊTRE ALBUM */
+#albumMenu .menu-box {
+    width: 800px; /* Largeur fixe */
+    max-width: 95%; /* Responsive */
+    min-height: 700px; /* Hauteur minimale fixe pour éviter les sauts */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 15px;
-    border-bottom: 2px dashed #ccc;
-    padding-bottom: 10px;
 }
 
-    .album-preview-box img {
-        height: 90px;
+.album-preview-box {
+    height: 180px; /* HAUTEUR FIXE POUR ÉVITER LE SAUT */
+    width: 95%;
+    display: flex;
+    flex-direction: row; /* Image à gauche, Texte à droite */
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+    border-bottom: 2px dashed #ccc;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 15px;
+    gap: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.album-preview-img-container {
+    flex-shrink: 0;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .album-preview-img-container img {
+        max-width: 100%;
+        max-height: 100%;
         width: auto;
-        object-fit: contain;
-        margin-bottom: 10px;
+        height: auto;
         filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
         transition: all 0.2s ease;
     }
 
-    .album-preview-box h3 {
-        margin: 0;
-        font-size: 1.5rem;
-        color: #555;
+.album-preview-info {
+    flex-grow: 1;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* FIXÉ EN HAUT */
+    padding-top: 15px; /* Petit espace au dessus pour que le titre ne colle pas au bord */
+}
+
+    .album-preview-info h3 {
+        margin: 0 0 5px 0;
+        font-size: 1.8rem;
+        color: #333;
         text-transform: uppercase;
         font-family: 'Arial Black', sans-serif;
         letter-spacing: 1px;
+        text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
     }
+
+/* Style des effets dans l'album */
+.effect-desc {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: rgba(0,0,0,0.05);
+    width: fit-content;
+}
+
+    .effect-desc.type-bonus {
+        color: #44D62C; /* Vert */
+        border: 1px solid #44D62C;
+        background: rgba(68, 214, 44, 0.1);
+    }
+
+    .effect-desc.type-malus {
+        color: #E52521; /* Rouge */
+        border: 1px solid #E52521;
+        background: rgba(229, 37, 33, 0.1);
+    }
+
+    .effect-desc.type-neutral {
+        color: #777; /* Gris */
+        border: 1px solid #999;
+    }
+
+/* Style de la biographie */
+.bio-desc {
+    font-style: italic;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    margin: 0;
+    border-left: 3px solid #FBD000;
+    padding-left: 10px;
+}
 
 .album-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 8px;
     margin: 20px 0;
-    max-height: 60vh;
+    /* max-height retiré ici car géré par le flex container parent */
     overflow-y: auto;
+    flex-grow: 1; /* Prend tout l'espace disponible */
+    min-height: 0; /* Important pour le scroll flexbox */
 }
 
 .album-item {
@@ -773,7 +849,6 @@ input[type=range] {
         box-shadow: 0 0 5px #FFD700;
     }
 
-    /* FIX: Survol item album (pas de scale qui casse la layout) */
     .album-item:hover {
         transform: none;
         border-color: #049CD8;
@@ -783,7 +858,6 @@ input[type=range] {
     }
 
 /* --- SKINS --- */
-/* Lock & Status */
 .lock-overlay {
     display: none;
     position: absolute;
@@ -923,15 +997,15 @@ input[type=range] {
     opacity: 0.4;
     transition: all 0.2s ease;
     background: #222;
-    padding: 5px;
+    padding: 2px; /* Réduction du padding */
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
     .select-item img {
-        width: 90%;
-        height: 90%;
+        width: 90%; /* Augmentation à 100% */
+        height: 90%; /* Augmentation à 100% */
         object-fit: contain;
     }
 
@@ -959,12 +1033,15 @@ input[type=range] {
 }
 
 .char-description {
-    min-height: 30px;
+    height: 50px; /* HAUTEUR FIXE POUR STABILITÉ */
     margin-top: 10px;
     font-size: 1.1rem;
     font-weight: bold;
     color: #333;
     transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Countdown */
@@ -1271,10 +1348,9 @@ input[type=range] {
     aspect-ratio: 1 / 1;
     height: auto;
     -webkit-tap-highlight-color: transparent;
-    --card-scale: 1; /* Variable pour gérer l'échelle (normal) */
+    --card-scale: 1;
 }
 
-    /* Effet Tilt 3D au survol */
     .memory-card.tilting {
         transition: transform 0.1s ease-out !important;
         z-index: 10;
@@ -1285,12 +1361,10 @@ input[type=range] {
         transform: rotateY(180deg);
     }
 
-    /* --- FIX VISUEL CRITIQUE POUR L'ÉTOILE --- */
-    /* Cette règle force le retournement et ignore les transformations conflictuelles (Chomp, etc.) */
     .memory-card.star-reveal {
         transform: scale(var(--card-scale, 1)) rotateY(180deg) !important;
         transition: transform 0.5s ease !important;
-        animation: none !important; /* Stop l'animation Chomp si active */
+        animation: none !important;
     }
 
 .front-face, .back-face {
@@ -1411,7 +1485,6 @@ input[type=range] {
     transform: none;
 }
 
-/* FIX: Stabilisation au survol */
 .memory-card.flip:not(.error):hover,
 .memory-card.matched:hover {
     transform: rotateY(180deg) !important;
@@ -1525,7 +1598,6 @@ body.chomp-flash::before {
     }
 }
 
-/* Animation CHOMP corrigée pour respecter l'échelle */
 @keyframes chainShake {
     10%, 90% {
         transform: scale(var(--card-scale, 1)) translate3d(-1px, 0, 0) rotate(-1deg);
@@ -1581,7 +1653,7 @@ body.thunder-flash::before {
 }
 
 .tiny-cards .memory-card {
-    --card-scale: 0.6; /* Mise à jour de l'échelle pour l'animation */
+    --card-scale: 0.6;
     transform: scale(var(--card-scale));
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -1634,13 +1706,11 @@ body.poison-fog::after {
     padding: 0;
 }
 
-/* FIX: On force le curseur caché partout */
 .cursor-hidden,
 .cursor-hidden * {
     cursor: none !important;
 }
 
-    /* On désactive les effets de survol quand le curseur est caché pour éviter de tricher */
     .cursor-hidden .btn-level:hover,
     .cursor-hidden .btn-menu:hover,
     .cursor-hidden .hud-btn:hover,
@@ -1714,7 +1784,6 @@ body.poison-fog::after {
         box-shadow: 0 0 10px #fff;
     }
 
-/* Conteneur des sélecteurs */
 .color-picker-container {
     display: flex;
     justify-content: center;
@@ -1735,7 +1804,6 @@ body.poison-fog::after {
         color: #333;
     }
 
-/* Style des inputs color */
 input[type="color"] {
     -webkit-appearance: none;
     border: none;
@@ -1817,14 +1885,13 @@ input[type="color"] {
 /* --- PARTICULES MAGIQUES (TRAÎNÉE & CLIC) --- */
 .magic-particle {
     position: fixed;
-    pointer-events: none; /* Important pour cliquer au travers */
+    pointer-events: none;
     z-index: 9999;
     border-radius: 50%;
     background: white;
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
 }
 
-/* Animation de la traînée (douce) */
 .trail-anim {
     width: 6px;
     height: 6px;
@@ -1843,7 +1910,6 @@ input[type="color"] {
     }
 }
 
-/* Animation du clic (explosion) */
 .burst-anim {
     width: 8px;
     height: 8px;
@@ -1858,13 +1924,12 @@ input[type="color"] {
     }
 
     100% {
-        /* Les variables --x et --y sont définies par le JS */
         transform: translate(var(--x), var(--y)) scale(0) rotate(180deg);
         opacity: 0;
     }
 }
 
-/* --- CURSEUR GLOBAL (APPLIQUÉ PARTOUT À LA FIN) --- */
+/* --- CURSEUR GLOBAL --- */
 button,
 .btn-level,
 .btn-menu,
