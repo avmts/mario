@@ -66,7 +66,7 @@
         <div class="menu-box" style="max-width: 800px;">
             <div style="display:flex; align-items:center; justify-content:center; gap:15px;">
                 <!-- Image mise à jour pour le Toad Shop (cercle rouge retiré) -->
-                <img src="toadshop.jpg" style="height:100px; border-radius: 50%;">
+                <img src="images/toadshop.png" style="height:100px; border-radius: 50%;">
                 <h2 style="margin:0; color:#E52521; font-size: 2.5rem; text-shadow: 2px 2px 0 #000;">TOAD SHOP</h2>
             </div>
             <p>Dépense tes pièces pour acheter des bonus utilisables en jeu !</p>
@@ -119,26 +119,26 @@
                     </div>
                 </div>
 
-                <!-- Item 4: Fleur de Feu (NOUVEAU) -->
+                <!-- Item 4: Fleur de Feu -->
                 <div class="shop-item">
                     <div class="item-icon"><img src="images/fireflower.png"></div>
                     <div class="item-info">
                         <h3>Fleur de Feu</h3>
                         <p>Trouve une paire auto.</p>
-                        <div class="price">550 <img src="images/coin.png"></div>
+                        <div class="price">300 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-fireflower">x0</span>
-                        <button class="btn-buy" onclick="buyItem('fireflower', 550)">ACHETER</button>
+                        <button class="btn-buy" onclick="buyItem('fireflower', 300)">ACHETER</button>
                     </div>
                 </div>
 
-                <!-- Item 5: Fleur de Glace (NOUVEAU) -->
+                <!-- Item 5: Fleur de Glace -->
                 <div class="shop-item">
                     <div class="item-icon"><img src="images/iceflower.png"></div>
                     <div class="item-info">
                         <h3>Fleur de Glace</h3>
-                        <p>Gèle le chrono (10s).</p>
+                        <p>Gèle le temps (10s).</p>
                         <div class="price">300 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
@@ -147,17 +147,17 @@
                     </div>
                 </div>
 
-                <!-- Item 6: Bloc ? (NOUVEAU) -->
-                <div class="shop-item">
+                <!-- Item 6: Bloc ? -->
+                <div class="shop-item" style="border-color: #FBD000; background: #fffde7;">
                     <div class="item-icon"><img src="images/block.png"></div>
                     <div class="item-info">
-                        <h3>Bloc ?</h3>
-                        <p>Surprise aléatoire !</p>
+                        <h3 style="color:#b8860b">Bloc Surprise</h3>
+                        <p>Utilise un objet au hasard !</p>
                         <div class="price">250 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
-                        <span class="stock" id="stock-luckyblock">x0</span>
-                        <button class="btn-buy" onclick="buyItem('luckyblock', 250)">ACHETER</button>
+                        <span class="stock" id="stock-mysteryblock" style="background:#b8860b;">x0</span>
+                        <button class="btn-buy" style="background:#FBD000; color:#b85c00;" onclick="buyItem('mysteryblock', 250)">ACHETER</button>
                     </div>
                 </div>
             </div>
