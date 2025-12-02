@@ -9,7 +9,9 @@ const characterNames = [
     'skelerex', 'spike', 'bobomb', 'iceflower', '1up',
     'chainchomp', 'lightning', 'poison', 'cherry',
     // AJOUT DES BÉBÉS ICI
-    'babywario', 'babypeach', 'babyluigi', 'babydaisy', 'babymario', 'babyharmony'
+    'babywario', 'babypeach', 'babyluigi', 'babydaisy', 'babymario', 'babyharmony',
+    // NOUVEL AJOUT
+    'goombette'
 ];
 const allCharacters = characterNames.map(name => ({ name: name, img: `images/${name}.png` }));
 
@@ -35,7 +37,9 @@ const frenchNames = {
     'babyluigi': "Bébé Luigi",
     'babydaisy': "Bébé Daisy",
     'babymario': "Bébé Mario",
-    'babyharmony': "Bébé Harmonie"
+    'babyharmony': "Bébé Harmonie",
+    //NOUVEL AJOUT
+    'goombette': "Goombette"
 };
 
 // --- DONNÉES DE L'ALBUM (BIO & EFFETS) ---
@@ -52,6 +56,7 @@ const ALBUM_DATA = {
     'dk': { bio: "Le puissant gorille héritier du titre DK, petit-fils du Donkey Kong original devenu Cranky Kong. Gardien de l'île DK et de la réserve de bananes, il possède une force colossale et maîtrise les attaques au sol Ground Pound.", effect: "Aucun effet spécial.", type: 'neutral' },
     'koopa': { bio: "Les tortues bipèdes de l'armée Koopa, disponibles en variantes vertes et rouges. Leur carapace devient un projectile réutilisable une fois éjecté par un saut.​", effect: "Aucun effet spécial.", type: 'neutral' },
     'goomba': { bio: "L'ennemi iconique en forme de champignon marron, traître du Royaume Champignon ayant rejoint l'armée de Bowser. Premier obstacle de Super Mario Bros., écrasable d'un simple saut.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'goombette': { bio: "La version féminine du Goomba, reconnaissable à son nœud rose. Apparaît dans divers jeux Mario en tant que personnage jouable.", effect: "Aucun effet spécial.", type: 'neutral' }, 
     'fireflower': { bio: "Le Fire Flower, transformation classique permettant de lancer des boules de feu depuis Super Mario Bros..", effect: "BONUS : Trouve une paire automatiquement.", type: 'bonus' },
     'ghost': { bio: "Les fantômes Boo Diddly timides issus des Boos Mansion. Ils se figent et se cachent le visage quand on les regarde directement mais attaquent vicieusement quand on leur tourne le dos.", effect: "PIÈGE : Rend l'écran flou (Boo).", type: 'malus' },
     'bullet': { bio: "Les missiles anthropomorphes Bullet Bill de l'arsenal militaire Koopa. Tirés depuis des Bill Blaster, ils foncent en ligne droite avec une détermination implacable.", effect: "Aucun effet spécial.", type: 'neutral' },
@@ -272,7 +277,7 @@ function updateWalletDisplay() {
     const menuWallet = document.getElementById('menuWallet');
     const shopWallet = document.getElementById('shopWallet');
     const clickerWallet = document.getElementById('clickerWallet');
-    
+
     if (menuWallet) menuWallet.innerText = Math.floor(totalCoins);
     if (shopWallet) shopWallet.innerText = Math.floor(totalCoins);
     if (clickerWallet) clickerWallet.innerText = Math.floor(totalCoins);
@@ -281,7 +286,7 @@ function updateWalletDisplay() {
 function saveEconomy() {
     localStorage.setItem('mario_total_coins', Math.floor(totalCoins));
     localStorage.setItem('mario_inventory', JSON.stringify(inventory));
-    
+
     // Sauvegarde du clicker
     clickerData.lastTime = Date.now();
     localStorage.setItem('mario_clicker_data', JSON.stringify(clickerData));
@@ -649,7 +654,7 @@ function openClickerMenu() {
     startMenu.classList.remove('active');
     clickerMenu.classList.add('active');
     updateClickerUI();
-    
+
     // Lancer la boucle de jeu du clicker si ce n'est pas déjà fait
     if (!window.clickerInterval) {
         window.clickerInterval = setInterval(clickerLoop, 1000);
@@ -658,17 +663,17 @@ function openClickerMenu() {
 
 function updateClickerUI() {
     updateWalletDisplay();
-    
+
     // --- YOSHI ---
     const yoshiCostElem = document.getElementById('yoshiCost');
     const yoshiLevelElem = document.getElementById('yoshiLevel');
     const yoshiRateElem = document.getElementById('yoshiRateDisplay');
     const btnBuyYoshi = document.getElementById('btnBuyYoshi');
-    
+
     if (yoshiCostElem) yoshiCostElem.innerText = clickerData.yoshiCost;
     if (yoshiLevelElem) yoshiLevelElem.innerText = clickerData.yoshiCount;
     if (yoshiRateElem) yoshiRateElem.innerText = clickerData.yoshiCount + " pièce(s)";
-    
+
     if (btnBuyYoshi) {
         if (totalCoins >= clickerData.yoshiCost) {
             btnBuyYoshi.disabled = false;
@@ -745,20 +750,20 @@ function clickBlock() {
     updateWalletDisplay();
     updateClickerUI(); // Pour mettre à jour l'état des boutons d'achat
     saveEconomy();
-    
+
     // Effets visuels
     const block = document.getElementById('clickerBlock');
     block.classList.remove('click-anim');
     void block.offsetWidth; // Trigger reflow
     block.classList.add('click-anim');
-    
+
     playSound(document.getElementById('sfxCoin'));
-    
+
     // Particules
     const rect = block.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     spawnFloatingText(centerX, centerY - 50, "+1", "#FBD000");
     spawnParticle(centerX, centerY, 'burst');
 }
@@ -768,13 +773,13 @@ function buyYoshi() {
         totalCoins -= clickerData.yoshiCost;
         clickerData.yoshiCount++;
         clickerData.yoshiCost += 50;
-        
+
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
         saveEconomy();
-        
+
         const msg = clickerData.yoshiCount > 1 ? "YOSHI AMÉLIORÉ !" : "YOSHI RECRUTÉ !";
-        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#44D62C");
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#44D62C");
     } else {
         playSound(document.getElementById('sfxBowser'));
     }
@@ -785,13 +790,13 @@ function buyPeach() {
         totalCoins -= clickerData.peachCost;
         clickerData.peachCount++;
         clickerData.peachCost += 50;
-        
+
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
         saveEconomy();
-        
+
         const msg = clickerData.peachCount > 1 ? "PEACH AMÉLIORÉE !" : "PEACH RECRUTÉE !";
-        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#ff69b4");
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#ff69b4");
     } else {
         playSound(document.getElementById('sfxBowser'));
     }
@@ -802,13 +807,13 @@ function buyToad() {
         totalCoins -= clickerData.toadCost;
         clickerData.toadCount++;
         clickerData.toadCost += 50;
-        
+
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
         saveEconomy();
-        
+
         const msg = clickerData.toadCount > 1 ? "TOAD AMÉLIORÉ !" : "TOAD RECRUTÉ !";
-        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#E52521");
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#E52521");
     } else {
         playSound(document.getElementById('sfxBowser'));
     }
@@ -819,13 +824,13 @@ function buyLuigi() {
         totalCoins -= clickerData.luigiCost;
         clickerData.luigiCount++;
         clickerData.luigiCost += 50;
-        
+
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
         saveEconomy();
-        
+
         const msg = clickerData.luigiCount > 1 ? "LUIGI AMÉLIORÉ !" : "LUIGI RECRUTÉ !";
-        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#44D62C");
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#44D62C");
     } else {
         playSound(document.getElementById('sfxBowser'));
     }
@@ -840,21 +845,21 @@ function clickerLoop() {
 
     if (totalRatePerMinute > 0) {
         const coinsPerSecond = totalRatePerMinute / 60;
-        
+
         clickerData.coinBuffer += coinsPerSecond;
-        
+
         if (clickerData.coinBuffer >= 1) {
             const gain = Math.floor(clickerData.coinBuffer);
             totalCoins += gain;
             clickerData.coinBuffer -= gain;
-            
+
             // Mise à jour visuelle globale
             updateWalletDisplay();
-            
+
             // Si on est dans le menu clicker, on met à jour l'UI spécifique
             if (clickerMenu.classList.contains('active')) {
                 updateClickerUI();
-                
+
                 // Petit effet visuel discret sur le wallet
                 const wallet = document.getElementById('clickerWallet');
                 wallet.style.color = "#FBD000";
@@ -869,8 +874,8 @@ function clickerLoop() {
 document.addEventListener('DOMContentLoaded', () => {
     const now = Date.now();
     const diffMs = now - (clickerData.lastTime || now);
-    
-    const yoshiRate = clickerData.yoshiCount; 
+
+    const yoshiRate = clickerData.yoshiCount;
     const peachRate = (clickerData.peachCount || 0) * 2;
     const toadRate = (clickerData.toadCount || 0) * 3;
     const luigiRate = (clickerData.luigiCount || 0) * 5;
@@ -879,14 +884,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (diffMs > 0 && totalRatePerMinute > 0) {
         const diffMinutes = diffMs / 60000;
         const offlineGains = Math.floor(diffMinutes * totalRatePerMinute);
-        
+
         if (offlineGains > 0) {
             totalCoins += offlineGains;
             console.log(`Gains hors ligne : ${offlineGains} pièces`);
             // On pourrait afficher une popup ici
         }
     }
-    
+
     // Démarrer la boucle
     if (!window.clickerInterval) {
         window.clickerInterval = setInterval(clickerLoop, 1000);
