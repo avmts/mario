@@ -241,15 +241,19 @@ let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     peachCost: 500,
     toadCount: 0,
     toadCost: 600,
+    luigiCount: 0,
+    luigiCost: 1000,
     lastTime: Date.now(),
     coinBuffer: 0
 };
 
-// Migration si Peach ou Toad n'existent pas encore dans les données sauvegardées
+// Migration si Peach, Toad ou Luigi n'existent pas encore dans les données sauvegardées
 if (typeof clickerData.peachCount === 'undefined') clickerData.peachCount = 0;
 if (typeof clickerData.peachCost === 'undefined') clickerData.peachCost = 500;
 if (typeof clickerData.toadCount === 'undefined') clickerData.toadCount = 0;
 if (typeof clickerData.toadCost === 'undefined') clickerData.toadCost = 600;
+if (typeof clickerData.luigiCount === 'undefined') clickerData.luigiCount = 0;
+if (typeof clickerData.luigiCost === 'undefined') clickerData.luigiCost = 1000;
 
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
@@ -714,6 +718,26 @@ function updateClickerUI() {
             btnBuyToad.style.opacity = "0.5";
         }
     }
+
+    // --- LUIGI ---
+    const luigiCostElem = document.getElementById('luigiCost');
+    const luigiLevelElem = document.getElementById('luigiLevel');
+    const luigiRateElem = document.getElementById('luigiRateDisplay');
+    const btnBuyLuigi = document.getElementById('btnBuyLuigi');
+
+    if (luigiCostElem) luigiCostElem.innerText = clickerData.luigiCost;
+    if (luigiLevelElem) luigiLevelElem.innerText = clickerData.luigiCount;
+    if (luigiRateElem) luigiRateElem.innerText = (clickerData.luigiCount * 5) + " pièce(s)";
+
+    if (btnBuyLuigi) {
+        if (totalCoins >= clickerData.luigiCost) {
+            btnBuyLuigi.disabled = false;
+            btnBuyLuigi.style.opacity = "1";
+        } else {
+            btnBuyLuigi.disabled = true;
+            btnBuyLuigi.style.opacity = "0.5";
+        }
+    }
 }
 
 function clickBlock() {
@@ -790,11 +814,29 @@ function buyToad() {
     }
 }
 
+function buyLuigi() {
+    if (totalCoins >= clickerData.luigiCost) {
+        totalCoins -= clickerData.luigiCost;
+        clickerData.luigiCount++;
+        clickerData.luigiCost += 50;
+        
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+        
+        const msg = clickerData.luigiCount > 1 ? "LUIGI AMÉLIORÉ !" : "LUIGI RECRUTÉ !";
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#44D62C");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
 function clickerLoop() {
     const yoshiRate = clickerData.yoshiCount; // 1 par minute par yoshi
     const peachRate = (clickerData.peachCount || 0) * 2; // 2 par minute par peach
     const toadRate = (clickerData.toadCount || 0) * 3; // 3 par minute par toad
-    const totalRatePerMinute = yoshiRate + peachRate + toadRate;
+    const luigiRate = (clickerData.luigiCount || 0) * 5; // 5 par minute par luigi
+    const totalRatePerMinute = yoshiRate + peachRate + toadRate + luigiRate;
 
     if (totalRatePerMinute > 0) {
         const coinsPerSecond = totalRatePerMinute / 60;
@@ -831,7 +873,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const yoshiRate = clickerData.yoshiCount; 
     const peachRate = (clickerData.peachCount || 0) * 2;
     const toadRate = (clickerData.toadCount || 0) * 3;
-    const totalRatePerMinute = yoshiRate + peachRate + toadRate;
+    const luigiRate = (clickerData.luigiCount || 0) * 5;
+    const totalRatePerMinute = yoshiRate + peachRate + toadRate + luigiRate;
 
     if (diffMs > 0 && totalRatePerMinute > 0) {
         const diffMinutes = diffMs / 60000;
