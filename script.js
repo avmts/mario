@@ -148,6 +148,7 @@ const pauseMenu = document.getElementById('pauseMenu');
 const countdownOverlay = document.getElementById('countdownOverlay');
 const countdownText = document.getElementById('countdownText');
 const shopMenu = document.getElementById('shopMenu');
+const clickerMenu = document.getElementById('clickerMenu');
 
 // MENU FOND D'ECRAN
 const bgMenu = document.getElementById('bgMenu');
@@ -232,6 +233,24 @@ let inventory = JSON.parse(localStorage.getItem('mario_inventory')) || {
     mysteryblock: 0
 };
 
+// --- DONNÉES DU CLICKER ---
+let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
+    yoshiCount: 0,
+    yoshiCost: 250,
+    peachCount: 0,
+    peachCost: 500,
+    toadCount: 0,
+    toadCost: 600,
+    lastTime: Date.now(),
+    coinBuffer: 0
+};
+
+// Migration si Peach ou Toad n'existent pas encore dans les données sauvegardées
+if (typeof clickerData.peachCount === 'undefined') clickerData.peachCount = 0;
+if (typeof clickerData.peachCost === 'undefined') clickerData.peachCost = 500;
+if (typeof clickerData.toadCount === 'undefined') clickerData.toadCount = 0;
+if (typeof clickerData.toadCost === 'undefined') clickerData.toadCost = 600;
+
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
 if (typeof inventory.clock === 'undefined') inventory.clock = 0;
@@ -248,13 +267,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateWalletDisplay() {
     const menuWallet = document.getElementById('menuWallet');
     const shopWallet = document.getElementById('shopWallet');
-    if (menuWallet) menuWallet.innerText = totalCoins;
-    if (shopWallet) shopWallet.innerText = totalCoins;
+    const clickerWallet = document.getElementById('clickerWallet');
+
+    if (menuWallet) menuWallet.innerText = Math.floor(totalCoins);
+    if (shopWallet) shopWallet.innerText = Math.floor(totalCoins);
+    if (clickerWallet) clickerWallet.innerText = Math.floor(totalCoins);
 }
 
 function saveEconomy() {
-    localStorage.setItem('mario_total_coins', totalCoins);
+    localStorage.setItem('mario_total_coins', Math.floor(totalCoins));
     localStorage.setItem('mario_inventory', JSON.stringify(inventory));
+
+    // Sauvegarde du clicker
+    clickerData.lastTime = Date.now();
+    localStorage.setItem('mario_clicker_data', JSON.stringify(clickerData));
 }
 
 // --- DESCRIPTIONS DES POUVOIRS ---
@@ -555,6 +581,7 @@ function goToMainMenu() {
 
     if (bgMenu) bgMenu.classList.remove('active');
     if (musicMenu) musicMenu.classList.remove('active');
+    if (clickerMenu) clickerMenu.classList.remove('active');
 
     // ARRET DE LA MUSIQUE
     bgMusic.pause();
@@ -589,6 +616,7 @@ function togglePause() {
         customMenu.classList.contains('active') ||
         skinMenu.classList.contains('active') ||
         shopMenu.classList.contains('active') ||
+        (clickerMenu && clickerMenu.classList.contains('active')) ||
         (bgMenu && bgMenu.classList.contains('active')) ||
         (musicMenu && musicMenu.classList.contains('active')) ||
         albumMenu.classList.contains('active') ||
@@ -611,6 +639,216 @@ function togglePause() {
         if (volumeSlider.value > 0 && !isBowserActive) bgMusic.play();
     }
 }
+
+// --- FONCTIONS MARIO CLICKER ---
+function openClickerMenu() {
+    startMenu.classList.remove('active');
+    clickerMenu.classList.add('active');
+    updateClickerUI();
+
+    // Lancer la boucle de jeu du clicker si ce n'est pas déjà fait
+    if (!window.clickerInterval) {
+        window.clickerInterval = setInterval(clickerLoop, 1000);
+    }
+}
+
+function updateClickerUI() {
+    updateWalletDisplay();
+
+    // --- YOSHI ---
+    const yoshiCostElem = document.getElementById('yoshiCost');
+    const yoshiLevelElem = document.getElementById('yoshiLevel');
+    const yoshiRateElem = document.getElementById('yoshiRateDisplay');
+    const btnBuyYoshi = document.getElementById('btnBuyYoshi');
+
+    if (yoshiCostElem) yoshiCostElem.innerText = clickerData.yoshiCost;
+    if (yoshiLevelElem) yoshiLevelElem.innerText = clickerData.yoshiCount;
+    if (yoshiRateElem) yoshiRateElem.innerText = clickerData.yoshiCount + " pièce(s)";
+
+    if (btnBuyYoshi) {
+        if (totalCoins >= clickerData.yoshiCost) {
+            btnBuyYoshi.disabled = false;
+            btnBuyYoshi.style.opacity = "1";
+        } else {
+            btnBuyYoshi.disabled = true;
+            btnBuyYoshi.style.opacity = "0.5";
+        }
+    }
+
+    // --- PEACH ---
+    const peachCostElem = document.getElementById('peachCost');
+    const peachLevelElem = document.getElementById('peachLevel');
+    const peachRateElem = document.getElementById('peachRateDisplay');
+    const btnBuyPeach = document.getElementById('btnBuyPeach');
+
+    if (peachCostElem) peachCostElem.innerText = clickerData.peachCost;
+    if (peachLevelElem) peachLevelElem.innerText = clickerData.peachCount;
+    if (peachRateElem) peachRateElem.innerText = (clickerData.peachCount * 2) + " pièce(s)";
+
+    if (btnBuyPeach) {
+        if (totalCoins >= clickerData.peachCost) {
+            btnBuyPeach.disabled = false;
+            btnBuyPeach.style.opacity = "1";
+        } else {
+            btnBuyPeach.disabled = true;
+            btnBuyPeach.style.opacity = "0.5";
+        }
+    }
+
+    // --- TOAD ---
+    const toadCostElem = document.getElementById('toadCost');
+    const toadLevelElem = document.getElementById('toadLevel');
+    const toadRateElem = document.getElementById('toadRateDisplay');
+    const btnBuyToad = document.getElementById('btnBuyToad');
+
+    if (toadCostElem) toadCostElem.innerText = clickerData.toadCost;
+    if (toadLevelElem) toadLevelElem.innerText = clickerData.toadCount;
+    if (toadRateElem) toadRateElem.innerText = (clickerData.toadCount * 3) + " pièce(s)";
+
+    if (btnBuyToad) {
+        if (totalCoins >= clickerData.toadCost) {
+            btnBuyToad.disabled = false;
+            btnBuyToad.style.opacity = "1";
+        } else {
+            btnBuyToad.disabled = true;
+            btnBuyToad.style.opacity = "0.5";
+        }
+    }
+}
+
+function clickBlock() {
+    totalCoins++;
+    updateWalletDisplay();
+    updateClickerUI(); // Pour mettre à jour l'état des boutons d'achat
+    saveEconomy();
+
+    // Effets visuels
+    const block = document.getElementById('clickerBlock');
+    block.classList.remove('click-anim');
+    void block.offsetWidth; // Trigger reflow
+    block.classList.add('click-anim');
+
+    playSound(document.getElementById('sfxCoin'));
+
+    // Particules
+    const rect = block.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    spawnFloatingText(centerX, centerY - 50, "+1", "#FBD000");
+    spawnParticle(centerX, centerY, 'burst');
+}
+
+function buyYoshi() {
+    if (totalCoins >= clickerData.yoshiCost) {
+        totalCoins -= clickerData.yoshiCost;
+        clickerData.yoshiCount++;
+        clickerData.yoshiCost += 50;
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.yoshiCount > 1 ? "YOSHI AMÉLIORÉ !" : "YOSHI RECRUTÉ !";
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#44D62C");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
+function buyPeach() {
+    if (totalCoins >= clickerData.peachCost) {
+        totalCoins -= clickerData.peachCost;
+        clickerData.peachCount++;
+        clickerData.peachCost += 50;
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.peachCount > 1 ? "PEACH AMÉLIORÉE !" : "PEACH RECRUTÉE !";
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#ff69b4");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
+function buyToad() {
+    if (totalCoins >= clickerData.toadCost) {
+        totalCoins -= clickerData.toadCost;
+        clickerData.toadCount++;
+        clickerData.toadCost += 50;
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.toadCount > 1 ? "TOAD AMÉLIORÉ !" : "TOAD RECRUTÉ !";
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, msg, "#E52521");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
+function clickerLoop() {
+    const yoshiRate = clickerData.yoshiCount; // 1 par minute par yoshi
+    const peachRate = (clickerData.peachCount || 0) * 2; // 2 par minute par peach
+    const toadRate = (clickerData.toadCount || 0) * 3; // 3 par minute par toad
+    const totalRatePerMinute = yoshiRate + peachRate + toadRate;
+
+    if (totalRatePerMinute > 0) {
+        const coinsPerSecond = totalRatePerMinute / 60;
+
+        clickerData.coinBuffer += coinsPerSecond;
+
+        if (clickerData.coinBuffer >= 1) {
+            const gain = Math.floor(clickerData.coinBuffer);
+            totalCoins += gain;
+            clickerData.coinBuffer -= gain;
+
+            // Mise à jour visuelle globale
+            updateWalletDisplay();
+
+            // Si on est dans le menu clicker, on met à jour l'UI spécifique
+            if (clickerMenu.classList.contains('active')) {
+                updateClickerUI();
+
+                // Petit effet visuel discret sur le wallet
+                const wallet = document.getElementById('clickerWallet');
+                wallet.style.color = "#FBD000";
+                setTimeout(() => wallet.style.color = "", 200);
+            }
+            saveEconomy();
+        }
+    }
+}
+
+// Calculer les gains hors ligne au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    const now = Date.now();
+    const diffMs = now - (clickerData.lastTime || now);
+
+    const yoshiRate = clickerData.yoshiCount;
+    const peachRate = (clickerData.peachCount || 0) * 2;
+    const toadRate = (clickerData.toadCount || 0) * 3;
+    const totalRatePerMinute = yoshiRate + peachRate + toadRate;
+
+    if (diffMs > 0 && totalRatePerMinute > 0) {
+        const diffMinutes = diffMs / 60000;
+        const offlineGains = Math.floor(diffMinutes * totalRatePerMinute);
+
+        if (offlineGains > 0) {
+            totalCoins += offlineGains;
+            console.log(`Gains hors ligne : ${offlineGains} pièces`);
+            // On pourrait afficher une popup ici
+        }
+    }
+
+    // Démarrer la boucle
+    if (!window.clickerInterval) {
+        window.clickerInterval = setInterval(clickerLoop, 1000);
+    }
+});
 
 // --- FONCTIONS BOUTIQUE ---
 function openShopMenu() {
