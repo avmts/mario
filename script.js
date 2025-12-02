@@ -1673,7 +1673,14 @@ function flipCard() {
 
 function checkForMatch() {
     let isMatch = firstCard.dataset.name === secondCard.dataset.name;
-    isMatch ? disableCards() : unflipCards();
+    if (isMatch) {
+        if (firstCard.dataset.name === 'goombette') {
+            triggerGoombetteEffect();
+        }
+        disableCards();
+    } else {
+        unflipCards();
+    }
 }
 
 function disableCards() {
@@ -2399,6 +2406,42 @@ function triggerShyGuyEffect() {
     shyguyTimeout = setTimeout(() => {
         clearShyGuyEffect();
     }, 8000);
+}
+
+function triggerGoombetteEffect() {
+    // Spawn many hearts
+    const count = 30;
+    for (let i = 0; i < count; i++) {
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        spawnHeart(x, y);
+    }
+
+    const msg = "GOOMBETTE LOVE ! ❤️";
+    spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#ff69b4");
+}
+
+function spawnHeart(x, y) {
+    const heart = document.createElement('div');
+    heart.classList.add('heart-particle');
+
+    // Create inner CSS heart shape
+    const heartShape = document.createElement('div');
+    heartShape.classList.add('heart-shape');
+    heart.appendChild(heartShape);
+
+    heart.style.left = x + 'px';
+    heart.style.top = y + 'px';
+
+    // Random movement direction for animation
+    const xDir = (Math.random() - 0.5) * 200 + 'px';
+    const yDir = -Math.random() * 200 - 50 + 'px'; // Move up generally
+
+    heart.style.setProperty('--x', xDir);
+    heart.style.setProperty('--y', yDir);
+
+    document.body.appendChild(heart);
+    setTimeout(() => { heart.remove(); }, 2000);
 }
 
 function triggerCherryEffect() {
