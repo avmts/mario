@@ -2447,7 +2447,7 @@ function spawnHeart(x, y) {
 function showOfflinePopup(amount) {
     const popup = document.createElement('div');
     popup.classList.add('offline-popup');
-    popup.innerHTML = `💰 Gains hors ligne : +${amount} pièces !`;
+    popup.innerHTML = `<img src="images/coin.png" alt="Coin"> Gains hors ligne : +${amount} pièces !`;
     document.body.appendChild(popup);
 
     // Removal handled by CSS animation duration, but good to clean up DOM

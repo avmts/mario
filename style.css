@@ -2073,3 +2073,12 @@ input[type="color"],
         opacity: 0;
     }
 }
+
+/* Style for coin image in offline popup */
+.offline-popup img {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-right: 8px;
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.3));
+}
