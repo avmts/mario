@@ -1951,10 +1951,10 @@ input[type="color"],
     cursor: url('curseur/pointer.cur'), pointer !important;
 }
 
-/* --- MARIO CLICKER STYLES --- */
-#clickerBlock:active {
-    transform: scale(0.9) !important;
-}
+    /* --- MARIO CLICKER STYLES --- */
+    #clickerBlock:active {
+        transform: scale(0.9) !important;
+    }
 
 #clickerMenu .clicker-area {
     user-select: none;
@@ -1969,21 +1969,35 @@ input[type="color"],
 
 /* Animation lors du clic sur le bloc */
 @keyframes clickWobble {
-    0% { transform: scale(1) rotate(0deg); }
-    25% { transform: scale(1.1) rotate(-5deg); }
-    50% { transform: scale(1.1) rotate(5deg); }
-    75% { transform: scale(1.1) rotate(-5deg); }
-    100% { transform: scale(1) rotate(0deg); }
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    25% {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    50% {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    75% {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
 }
 
 .click-anim {
     animation: clickWobble 0.2s ease-out;
 }
 
-/* GOOMBETTE EFFECT */
+/* GOOMBETTE EFFET */
 .heart-particle {
     position: fixed;
-    color: #ff69b4; /* HotPink */
+    color: #ff69b4; /* Rose */
     font-size: 2rem;
     pointer-events: none;
     z-index: 9999;
@@ -1995,17 +2009,19 @@ input[type="color"],
         transform: translate(-50%, -50%) scale(0.5);
         opacity: 0;
     }
+
     10% {
         transform: translate(-50%, -50%) scale(1.2);
         opacity: 1;
     }
+
     100% {
         transform: translate(var(--x), var(--y)) scale(1);
         opacity: 0;
     }
 }
 
-/* CSS Heart Shape */
+/* CSS Style Coeurs */
 .heart-shape {
     position: relative;
     width: 20px;
@@ -2015,22 +2031,73 @@ input[type="color"],
     display: inline-block;
 }
 
-.heart-shape::before,
-.heart-shape::after {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background-color: #ff69b4;
-    border-radius: 50%;
+    .heart-shape::before,
+    .heart-shape::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: #ff69b4;
+        border-radius: 50%;
+    }
+
+    .heart-shape::before {
+        top: -10px;
+        left: 0;
+    }
+
+    .heart-shape::after {
+        top: 0;
+        left: -10px;
+    }
+
+/* OFFLINE POPUP */
+.offline-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #28a745; /* Vert */
+    color: #FBD000; /* Jaune */
+    padding: 15px 25px;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 10000;
+    transform: translateY(-100px);
+    opacity: 0;
+    animation: slideDownFade 4s ease-in-out forwards;
+    border: 2px solid white;
+    text-shadow: 1px 1px 0 #000;
 }
 
-.heart-shape::before {
-    top: -10px;
-    left: 0;
+@keyframes slideDownFade {
+    0% {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+
+    10% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    90% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
 }
 
-.heart-shape::after {
-    top: 0;
-    left: -10px;
+/* Style pour l'image de la pièce dans l'offline popup */
+.offline-popup img {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-right: 8px;
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.3));
 }
