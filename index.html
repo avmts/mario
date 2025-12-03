@@ -175,19 +175,6 @@
 
             <div class="shop-grid">
                 <div class="shop-item">
-                    <div class="item-icon"><img src="images/1up.png"></div>
-                    <div class="item-info">
-                        <h3>Champi Vie</h3>
-                        <p>+1 Vie en pleine partie.</p>
-                        <div class="price">1500 <img src="images/coin.png"></div>
-                    </div>
-                    <div class="item-action">
-                        <span class="stock" id="stock-mushroom">x0</span>
-                        <button class="btn-buy" onclick="buyItem('mushroom', 1500)">ACHETER</button>
-                    </div>
-                </div>
-
-                <div class="shop-item">
                     <div class="item-icon"><span style="font-size:3rem">⏰</span></div>
                     <div class="item-info">
                         <h3>Chrono +</h3>
@@ -199,33 +186,18 @@
                         <button class="btn-buy" onclick="buyItem('clock', 500)">ACHETER</button>
                     </div>
                 </div>
-
-                <div class="shop-item">
-                    <div class="item-icon"><img src="images/star.png"></div>
+                <div class="shop-item" style="border-color: #FBD000; background: #fffde7;">
+                    <div class="item-icon"><img src="images/block.png"></div>
                     <div class="item-info">
-                        <h3>Super Étoile</h3>
-                        <p>Révèle tout pendant 3s.</p>
-                        <div class="price">3000 <img src="images/coin.png"></div>
+                        <h3 style="color:#b8860b">Bloc Surprise</h3>
+                        <p>Utilise un objet au hasard !</p>
+                        <div class="price">800 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
-                        <span class="stock" id="stock-star">x0</span>
-                        <button class="btn-buy" onclick="buyItem('star', 3000)">ACHETER</button>
+                        <span class="stock" id="stock-mysteryblock" style="background:#b8860b;">x0</span>
+                        <button class="btn-buy" style="background:#FBD000; color:#b85c00;" onclick="buyItem('mysteryblock', 800)">ACHETER</button>
                     </div>
                 </div>
-
-                <div class="shop-item">
-                    <div class="item-icon"><img src="images/fireflower.png"></div>
-                    <div class="item-info">
-                        <h3>Fleur de Feu</h3>
-                        <p>Trouve une paire auto.</p>
-                        <div class="price">1200 <img src="images/coin.png"></div>
-                    </div>
-                    <div class="item-action">
-                        <span class="stock" id="stock-fireflower">x0</span>
-                        <button class="btn-buy" onclick="buyItem('fireflower', 1200)">ACHETER</button>
-                    </div>
-                </div>
-
                 <div class="shop-item">
                     <div class="item-icon"><img src="images/iceflower.png"></div>
                     <div class="item-info">
@@ -238,17 +210,40 @@
                         <button class="btn-buy" onclick="buyItem('iceflower', 1000)">ACHETER</button>
                     </div>
                 </div>
-
-                <div class="shop-item" style="border-color: #FBD000; background: #fffde7;">
-                    <div class="item-icon"><img src="images/block.png"></div>
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/fireflower.png"></div>
                     <div class="item-info">
-                        <h3 style="color:#b8860b">Bloc Surprise</h3>
-                        <p>Utilise un objet au hasard !</p>
-                        <div class="price">800 <img src="images/coin.png"></div>
+                        <h3>Fleur de Feu</h3>
+                        <p>Trouve une paire auto.</p>
+                        <div class="price">1200 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
-                        <span class="stock" id="stock-mysteryblock" style="background:#b8860b;">x0</span>
-                        <button class="btn-buy" style="background:#FBD000; color:#b85c00;" onclick="buyItem('mysteryblock', 800)">ACHETER</button>
+                        <span class="stock" id="stock-fireflower">x0</span>
+                        <button class="btn-buy" onclick="buyItem('fireflower', 1200)">ACHETER</button>
+                    </div>
+                </div>
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/1up.png"></div>
+                    <div class="item-info">
+                        <h3>Champi Vie</h3>
+                        <p>+1 Vie en pleine partie.</p>
+                        <div class="price">1500 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-mushroom">x0</span>
+                        <button class="btn-buy" onclick="buyItem('mushroom', 1500)">ACHETER</button>
+                    </div>
+                </div>
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/star.png"></div>
+                    <div class="item-info">
+                        <h3>Super Étoile</h3>
+                        <p>Révèle tout pendant 3s.</p>
+                        <div class="price">3000 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-star">x0</span>
+                        <button class="btn-buy" onclick="buyItem('star', 3000)">ACHETER</button>
                     </div>
                 </div>
             </div>
