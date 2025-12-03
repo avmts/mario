@@ -888,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (offlineGains > 0) {
             totalCoins += offlineGains;
             console.log(`Gains hors ligne : ${offlineGains} pièces`);
-            // On pourrait afficher une popup ici
+            showOfflinePopup(offlineGains);
         }
     }
 
@@ -1673,7 +1673,14 @@ function flipCard() {
 
 function checkForMatch() {
     let isMatch = firstCard.dataset.name === secondCard.dataset.name;
-    isMatch ? disableCards() : unflipCards();
+    if (isMatch) {
+        if (firstCard.dataset.name === 'goombette') {
+            triggerGoombetteEffect();
+        }
+        disableCards();
+    } else {
+        unflipCards();
+    }
 }
 
 function disableCards() {
@@ -2399,6 +2406,54 @@ function triggerShyGuyEffect() {
     shyguyTimeout = setTimeout(() => {
         clearShyGuyEffect();
     }, 8000);
+}
+
+function triggerGoombetteEffect() {
+    // Générer beaucoup de coeurs
+    const count = 30;
+    for (let i = 0; i < count; i++) {
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        spawnHeart(x, y);
+    }
+
+    const msg = "GOOMBETTE LOVE ! ❤️";
+    spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#ff69b4");
+}
+
+function spawnHeart(x, y) {
+    const heart = document.createElement('div');
+    heart.classList.add('heart-particle');
+
+    // Créer la forme de coeur en CSS
+    const heartShape = document.createElement('div');
+    heartShape.classList.add('heart-shape');
+    heart.appendChild(heartShape);
+
+    heart.style.left = x + 'px';
+    heart.style.top = y + 'px';
+
+    // Direction de mouvement aléatoire pour l'animation
+    const xDir = (Math.random() - 0.5) * 200 + 'px';
+    const yDir = -Math.random() * 200 - 50 + 'px'; // Déplacement vers le haut général
+
+    heart.style.setProperty('--x', xDir);
+    heart.style.setProperty('--y', yDir);
+
+    document.body.appendChild(heart);
+    setTimeout(() => { heart.remove(); }, 2000);
+}
+
+function showOfflinePopup(amount) {
+    const popup = document.createElement('div');
+    popup.classList.add('offline-popup');
+    popup.innerHTML = `<img src="images/coin.png" alt="Coin"> Gains hors ligne : +${amount} pièces !`;
+    document.body.appendChild(popup);
+
+    // Suppression gérée par la durée de l'animation CSS, mais nettoyage du DOM par sécurité
+    setTimeout(() => {
+        popup.remove();
+    }, 4500); // Animation de 4s + 0.5s de marge
 }
 
 function triggerCherryEffect() {
