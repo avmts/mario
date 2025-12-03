@@ -240,25 +240,35 @@ let inventory = JSON.parse(localStorage.getItem('mario_inventory')) || {
 
 // --- DONNÉES DU CLICKER ---
 let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
+    goombaCount: 0,
+    goombaCost: 50,
     yoshiCount: 0,
-    yoshiCost: 250,
+    yoshiCost: 300,
     peachCount: 0,
-    peachCost: 500,
+    peachCost: 1000,
     toadCount: 0,
-    toadCost: 600,
+    toadCost: 3500,
     luigiCount: 0,
-    luigiCost: 1000,
+    luigiCost: 10000,
     lastTime: Date.now(),
     coinBuffer: 0
 };
 
-// Migration si Peach, Toad ou Luigi n'existent pas encore dans les données sauvegardées
+// Migration et Initialisation des coûts pour s'adapter à la nouvelle formule exponentielle (x1.2)
+// On s'assure que toutes les clés existent
+if (typeof clickerData.goombaCount === 'undefined') clickerData.goombaCount = 0;
+if (typeof clickerData.yoshiCount === 'undefined') clickerData.yoshiCount = 0;
 if (typeof clickerData.peachCount === 'undefined') clickerData.peachCount = 0;
-if (typeof clickerData.peachCost === 'undefined') clickerData.peachCost = 500;
 if (typeof clickerData.toadCount === 'undefined') clickerData.toadCount = 0;
-if (typeof clickerData.toadCost === 'undefined') clickerData.toadCost = 600;
 if (typeof clickerData.luigiCount === 'undefined') clickerData.luigiCount = 0;
-if (typeof clickerData.luigiCost === 'undefined') clickerData.luigiCost = 1000;
+
+// Recalcul forcé des coûts actuels basé sur le niveau (count) pour garantir la cohérence avec la formule x1.2
+// Formule : CoûtActuel = CoûtBase * (1.2 ^ Niveau)
+clickerData.goombaCost = Math.ceil(50 * Math.pow(1.2, clickerData.goombaCount));
+clickerData.yoshiCost = Math.ceil(300 * Math.pow(1.2, clickerData.yoshiCount));
+clickerData.peachCost = Math.ceil(1000 * Math.pow(1.2, clickerData.peachCount));
+clickerData.toadCost = Math.ceil(3500 * Math.pow(1.2, clickerData.toadCount));
+clickerData.luigiCost = Math.ceil(10000 * Math.pow(1.2, clickerData.luigiCount));
 
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
@@ -664,15 +674,50 @@ function openClickerMenu() {
 function updateClickerUI() {
     updateWalletDisplay();
 
+    // Fonction utilitaire pour calculer le rendu avec la formule exponentielle
+    // Base * (1.2^count - 1) / (1.2 - 1) -> Somme géométrique pour le total
+    // Mais ici le rendu par minute par unité augmente de 1.2
+    // Donc Production Totale = Base * ((1.2^N) - 1) / 0.2
+    // Pour simplifier, on applique : Rate = BaseRate * 5 * (1.2^N - 1)
+    const getRate = (count, base) => {
+        if (count <= 0) return 0;
+        // Utilisation de Math.round pour éviter les erreurs de virgule flottante (ex: 3.9999 -> 4)
+        return Math.round((base * 5) * (Math.pow(1.2, count) - 1));
+    };
+
+    // --- GOOMBA ---
+    const goombaCostElem = document.getElementById('goombaCost');
+    const goombaLevelElem = document.getElementById('goombaLevel');
+    const goombaRateElem = document.getElementById('goombaRateDisplay');
+    const btnBuyGoomba = document.getElementById('btnBuyGoomba');
+
+    const goombaRateVal = getRate(clickerData.goombaCount, 4);
+
+    if (goombaCostElem) goombaCostElem.innerText = clickerData.goombaCost;
+    if (goombaLevelElem) goombaLevelElem.innerText = clickerData.goombaCount;
+    if (goombaRateElem) goombaRateElem.innerText = goombaRateVal + " pièce(s)";
+
+    if (btnBuyGoomba) {
+        if (totalCoins >= clickerData.goombaCost) {
+            btnBuyGoomba.disabled = false;
+            btnBuyGoomba.style.opacity = "1";
+        } else {
+            btnBuyGoomba.disabled = true;
+            btnBuyGoomba.style.opacity = "0.5";
+        }
+    }
+
     // --- YOSHI ---
     const yoshiCostElem = document.getElementById('yoshiCost');
     const yoshiLevelElem = document.getElementById('yoshiLevel');
     const yoshiRateElem = document.getElementById('yoshiRateDisplay');
     const btnBuyYoshi = document.getElementById('btnBuyYoshi');
 
+    const yoshiRateVal = getRate(clickerData.yoshiCount, 12);
+
     if (yoshiCostElem) yoshiCostElem.innerText = clickerData.yoshiCost;
     if (yoshiLevelElem) yoshiLevelElem.innerText = clickerData.yoshiCount;
-    if (yoshiRateElem) yoshiRateElem.innerText = clickerData.yoshiCount + " pièce(s)";
+    if (yoshiRateElem) yoshiRateElem.innerText = yoshiRateVal + " pièce(s)";
 
     if (btnBuyYoshi) {
         if (totalCoins >= clickerData.yoshiCost) {
@@ -690,9 +735,11 @@ function updateClickerUI() {
     const peachRateElem = document.getElementById('peachRateDisplay');
     const btnBuyPeach = document.getElementById('btnBuyPeach');
 
+    const peachRateVal = getRate(clickerData.peachCount, 40);
+
     if (peachCostElem) peachCostElem.innerText = clickerData.peachCost;
     if (peachLevelElem) peachLevelElem.innerText = clickerData.peachCount;
-    if (peachRateElem) peachRateElem.innerText = (clickerData.peachCount * 2) + " pièce(s)";
+    if (peachRateElem) peachRateElem.innerText = peachRateVal + " pièce(s)";
 
     if (btnBuyPeach) {
         if (totalCoins >= clickerData.peachCost) {
@@ -710,9 +757,11 @@ function updateClickerUI() {
     const toadRateElem = document.getElementById('toadRateDisplay');
     const btnBuyToad = document.getElementById('btnBuyToad');
 
+    const toadRateVal = getRate(clickerData.toadCount, 150);
+
     if (toadCostElem) toadCostElem.innerText = clickerData.toadCost;
     if (toadLevelElem) toadLevelElem.innerText = clickerData.toadCount;
-    if (toadRateElem) toadRateElem.innerText = (clickerData.toadCount * 3) + " pièce(s)";
+    if (toadRateElem) toadRateElem.innerText = toadRateVal + " pièce(s)";
 
     if (btnBuyToad) {
         if (totalCoins >= clickerData.toadCost) {
@@ -730,9 +779,11 @@ function updateClickerUI() {
     const luigiRateElem = document.getElementById('luigiRateDisplay');
     const btnBuyLuigi = document.getElementById('btnBuyLuigi');
 
+    const luigiRateVal = getRate(clickerData.luigiCount, 450);
+
     if (luigiCostElem) luigiCostElem.innerText = clickerData.luigiCost;
     if (luigiLevelElem) luigiLevelElem.innerText = clickerData.luigiCount;
-    if (luigiRateElem) luigiRateElem.innerText = (clickerData.luigiCount * 5) + " pièce(s)";
+    if (luigiRateElem) luigiRateElem.innerText = luigiRateVal + " pièce(s)";
 
     if (btnBuyLuigi) {
         if (totalCoins >= clickerData.luigiCost) {
@@ -768,11 +819,30 @@ function clickBlock() {
     spawnParticle(centerX, centerY, 'burst');
 }
 
+function buyGoomba() {
+    if (totalCoins >= clickerData.goombaCost) {
+        totalCoins -= clickerData.goombaCost;
+        clickerData.goombaCount++;
+        // Coût suivant augmente de x1.2
+        clickerData.goombaCost = Math.ceil(clickerData.goombaCost * 1.2);
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.goombaCount > 1 ? "GOOMBA AMÉLIORÉ !" : "GOOMBA RECRUTÉ !";
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#A52A2A");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
 function buyYoshi() {
     if (totalCoins >= clickerData.yoshiCost) {
         totalCoins -= clickerData.yoshiCost;
         clickerData.yoshiCount++;
-        clickerData.yoshiCost += 50;
+        // Coût suivant augmente de x1.2
+        clickerData.yoshiCost = Math.ceil(clickerData.yoshiCost * 1.2);
 
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
@@ -789,7 +859,8 @@ function buyPeach() {
     if (totalCoins >= clickerData.peachCost) {
         totalCoins -= clickerData.peachCost;
         clickerData.peachCount++;
-        clickerData.peachCost += 50;
+        // Coût suivant augmente de x1.2
+        clickerData.peachCost = Math.ceil(clickerData.peachCost * 1.2);
 
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
@@ -806,7 +877,8 @@ function buyToad() {
     if (totalCoins >= clickerData.toadCost) {
         totalCoins -= clickerData.toadCost;
         clickerData.toadCount++;
-        clickerData.toadCost += 50;
+        // Coût suivant augmente de x1.2
+        clickerData.toadCost = Math.ceil(clickerData.toadCost * 1.2);
 
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
@@ -823,7 +895,8 @@ function buyLuigi() {
     if (totalCoins >= clickerData.luigiCost) {
         totalCoins -= clickerData.luigiCost;
         clickerData.luigiCount++;
-        clickerData.luigiCost += 50;
+        // Coût suivant augmente de x1.2
+        clickerData.luigiCost = Math.ceil(clickerData.luigiCost * 1.2);
 
         playSound(document.getElementById('sfxCoin'));
         updateClickerUI();
@@ -837,11 +910,18 @@ function buyLuigi() {
 }
 
 function clickerLoop() {
-    const yoshiRate = clickerData.yoshiCount; // 1 par minute par yoshi
-    const peachRate = (clickerData.peachCount || 0) * 2; // 2 par minute par peach
-    const toadRate = (clickerData.toadCount || 0) * 3; // 3 par minute par toad
-    const luigiRate = (clickerData.luigiCount || 0) * 5; // 5 par minute par luigi
-    const totalRatePerMinute = yoshiRate + peachRate + toadRate + luigiRate;
+    const getRate = (count, base) => {
+        if (count <= 0) return 0;
+        return (base * 5) * (Math.pow(1.2, count) - 1);
+    };
+
+    const goombaRate = getRate(clickerData.goombaCount, 4);
+    const yoshiRate = getRate(clickerData.yoshiCount, 12);
+    const peachRate = getRate(clickerData.peachCount, 40);
+    const toadRate = getRate(clickerData.toadCount, 150);
+    const luigiRate = getRate(clickerData.luigiCount, 450);
+
+    const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate;
 
     if (totalRatePerMinute > 0) {
         const coinsPerSecond = totalRatePerMinute / 60;
@@ -875,11 +955,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = Date.now();
     const diffMs = now - (clickerData.lastTime || now);
 
-    const yoshiRate = clickerData.yoshiCount;
-    const peachRate = (clickerData.peachCount || 0) * 2;
-    const toadRate = (clickerData.toadCount || 0) * 3;
-    const luigiRate = (clickerData.luigiCount || 0) * 5;
-    const totalRatePerMinute = yoshiRate + peachRate + toadRate + luigiRate;
+    const getRate = (count, base) => {
+        if (count <= 0) return 0;
+        return (base * 5) * (Math.pow(1.2, count) - 1);
+    };
+
+    const goombaRate = getRate(clickerData.goombaCount, 4);
+    const yoshiRate = getRate(clickerData.yoshiCount, 12);
+    const peachRate = getRate(clickerData.peachCount, 40);
+    const toadRate = getRate(clickerData.toadCount, 150);
+    const luigiRate = getRate(clickerData.luigiCount, 450);
+
+    const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate;
 
     if (diffMs > 0 && totalRatePerMinute > 0) {
         const diffMinutes = diffMs / 60000;
