@@ -250,6 +250,12 @@ let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     toadCost: 3500,
     luigiCount: 0,
     luigiCost: 10000,
+    warioCount: 0,
+    warioCost: 15000,
+    bowserCount: 0,
+    bowserCost: 50000,
+    harmonyCount: 0,
+    harmonyCost: 250000,
     lastTime: Date.now(),
     coinBuffer: 0
 };
@@ -261,14 +267,22 @@ if (typeof clickerData.yoshiCount === 'undefined') clickerData.yoshiCount = 0;
 if (typeof clickerData.peachCount === 'undefined') clickerData.peachCount = 0;
 if (typeof clickerData.toadCount === 'undefined') clickerData.toadCount = 0;
 if (typeof clickerData.luigiCount === 'undefined') clickerData.luigiCount = 0;
+if (typeof clickerData.warioCount === 'undefined') clickerData.warioCount = 0;
+if (typeof clickerData.bowserCount === 'undefined') clickerData.bowserCount = 0;
+if (typeof clickerData.harmonyCount === 'undefined') clickerData.harmonyCount = 0;
 
 // Recalcul forcé des coûts actuels basé sur le niveau (count) pour garantir la cohérence avec la formule x1.2
-// Formule : CoûtActuel = CoûtBase * (1.2 ^ Niveau)
+// Formule Standard : CoûtActuel = CoûtBase * (1.2 ^ Niveau)
 clickerData.goombaCost = Math.ceil(50 * Math.pow(1.2, clickerData.goombaCount));
 clickerData.yoshiCost = Math.ceil(300 * Math.pow(1.2, clickerData.yoshiCount));
 clickerData.peachCost = Math.ceil(1000 * Math.pow(1.2, clickerData.peachCount));
 clickerData.toadCost = Math.ceil(3500 * Math.pow(1.2, clickerData.toadCount));
 clickerData.luigiCost = Math.ceil(10000 * Math.pow(1.2, clickerData.luigiCount));
+
+// Formule High-Tier (Wario, Bowser, Harmonie) : CoûtActuel = CoûtBase * (1.4 ^ Niveau)
+clickerData.warioCost = Math.ceil(15000 * Math.pow(1.4, clickerData.warioCount));
+clickerData.bowserCost = Math.ceil(50000 * Math.pow(1.4, clickerData.bowserCount));
+clickerData.harmonyCost = Math.ceil(250000 * Math.pow(1.4, clickerData.harmonyCount));
 
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
@@ -790,6 +804,72 @@ function updateClickerUI() {
             btnBuyLuigi.style.opacity = "0.5";
         }
     }
+
+    // --- WARIO ---
+    const warioCostElem = document.getElementById('warioCost');
+    const warioLevelElem = document.getElementById('warioLevel');
+    const warioRateElem = document.getElementById('warioRateDisplay');
+    const btnBuyWario = document.getElementById('btnBuyWario');
+
+    const warioRateVal = getRate(clickerData.warioCount, 500);
+
+    if (warioCostElem) warioCostElem.innerText = clickerData.warioCost;
+    if (warioLevelElem) warioLevelElem.innerText = clickerData.warioCount;
+    if (warioRateElem) warioRateElem.innerText = warioRateVal + " pièce(s)";
+
+    if (btnBuyWario) {
+        if (totalCoins >= clickerData.warioCost) {
+            btnBuyWario.disabled = false;
+            btnBuyWario.style.opacity = "1";
+        } else {
+            btnBuyWario.disabled = true;
+            btnBuyWario.style.opacity = "0.5";
+        }
+    }
+
+    // --- BOWSER ---
+    const bowserCostElem = document.getElementById('bowserCost');
+    const bowserLevelElem = document.getElementById('bowserLevel');
+    const bowserRateElem = document.getElementById('bowserRateDisplay');
+    const btnBuyBowser = document.getElementById('btnBuyBowser');
+
+    const bowserRateVal = getRate(clickerData.bowserCount, 2000);
+
+    if (bowserCostElem) bowserCostElem.innerText = clickerData.bowserCost;
+    if (bowserLevelElem) bowserLevelElem.innerText = clickerData.bowserCount;
+    if (bowserRateElem) bowserRateElem.innerText = bowserRateVal + " pièce(s)";
+
+    if (btnBuyBowser) {
+        if (totalCoins >= clickerData.bowserCost) {
+            btnBuyBowser.disabled = false;
+            btnBuyBowser.style.opacity = "1";
+        } else {
+            btnBuyBowser.disabled = true;
+            btnBuyBowser.style.opacity = "0.5";
+        }
+    }
+
+    // --- HARMONIE (HARMONY) ---
+    const harmonyCostElem = document.getElementById('harmonyCost');
+    const harmonyLevelElem = document.getElementById('harmonyLevel');
+    const harmonyRateElem = document.getElementById('harmonyRateDisplay');
+    const btnBuyHarmony = document.getElementById('btnBuyHarmony');
+
+    const harmonyRateVal = getRate(clickerData.harmonyCount, 12000);
+
+    if (harmonyCostElem) harmonyCostElem.innerText = clickerData.harmonyCost;
+    if (harmonyLevelElem) harmonyLevelElem.innerText = clickerData.harmonyCount;
+    if (harmonyRateElem) harmonyRateElem.innerText = harmonyRateVal + " pièce(s)";
+
+    if (btnBuyHarmony) {
+        if (totalCoins >= clickerData.harmonyCost) {
+            btnBuyHarmony.disabled = false;
+            btnBuyHarmony.style.opacity = "1";
+        } else {
+            btnBuyHarmony.disabled = true;
+            btnBuyHarmony.style.opacity = "0.5";
+        }
+    }
 }
 
 function clickBlock() {
@@ -905,6 +985,60 @@ function buyLuigi() {
     }
 }
 
+function buyWario() {
+    if (totalCoins >= clickerData.warioCost) {
+        totalCoins -= clickerData.warioCost;
+        clickerData.warioCount++;
+        // Coût suivant augmente de x1.4 pour les hauts niveaux
+        clickerData.warioCost = Math.ceil(clickerData.warioCost * 1.4);
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.warioCount > 1 ? "WARIO AMÉLIORÉ !" : "WARIO RECRUTÉ !";
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#FBD000");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
+function buyBowser() {
+    if (totalCoins >= clickerData.bowserCost) {
+        totalCoins -= clickerData.bowserCost;
+        clickerData.bowserCount++;
+        // Coût suivant augmente de x1.4 pour les hauts niveaux
+        clickerData.bowserCost = Math.ceil(clickerData.bowserCost * 1.4);
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.bowserCount > 1 ? "BOWSER AMÉLIORÉ !" : "BOWSER RECRUTÉ !";
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#E52521");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
+function buyHarmony() {
+    if (totalCoins >= clickerData.harmonyCost) {
+        totalCoins -= clickerData.harmonyCost;
+        clickerData.harmonyCount++;
+        // Coût suivant augmente de x1.4 pour les hauts niveaux
+        clickerData.harmonyCost = Math.ceil(clickerData.harmonyCost * 1.4);
+
+        playSound(document.getElementById('sfxCoin'));
+        updateClickerUI();
+        saveEconomy();
+
+        const msg = clickerData.harmonyCount > 1 ? "HARMONIE AMÉLIORÉE !" : "HARMONIE RECRUTÉE !";
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, msg, "#00ffff");
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+    }
+}
+
 function clickerLoop() {
     const getRate = (count, base) => {
         if (count <= 0) return 0;
@@ -917,7 +1051,11 @@ function clickerLoop() {
     const toadRate = getRate(clickerData.toadCount, 150);
     const luigiRate = getRate(clickerData.luigiCount, 450);
     
-    const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate;
+    const warioRate = getRate(clickerData.warioCount, 500);
+    const bowserRate = getRate(clickerData.bowserCount, 2000);
+    const harmonyRate = getRate(clickerData.harmonyCount, 12000);
+
+    const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate + warioRate + bowserRate + harmonyRate;
 
     if (totalRatePerMinute > 0) {
         const coinsPerSecond = totalRatePerMinute / 60;
@@ -962,7 +1100,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const toadRate = getRate(clickerData.toadCount, 150);
     const luigiRate = getRate(clickerData.luigiCount, 450);
     
-    const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate;
+    const warioRate = getRate(clickerData.warioCount, 500);
+    const bowserRate = getRate(clickerData.bowserCount, 2000);
+    const harmonyRate = getRate(clickerData.harmonyCount, 12000);
+
+    const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate + warioRate + bowserRate + harmonyRate;
 
     if (diffMs > 0 && totalRatePerMinute > 0) {
         const diffMinutes = diffMs / 60000;
