@@ -674,15 +674,11 @@ function openClickerMenu() {
 function updateClickerUI() {
     updateWalletDisplay();
 
-    // Fonction utilitaire pour calculer le rendu avec la formule exponentielle
-    // Base * (1.2^count - 1) / (1.2 - 1) -> Somme géométrique pour le total
-    // Mais ici le rendu par minute par unité augmente de 1.2
-    // Donc Production Totale = Base * ((1.2^N) - 1) / 0.2
-    // Pour simplifier, on applique : Rate = BaseRate * 5 * (1.2^N - 1)
+    // Fonction utilitaire pour calculer le rendu linéaire (Count * Base)
+    // Production Totale = Niveau * ProductionDeBase
     const getRate = (count, base) => {
         if (count <= 0) return 0;
-        // Utilisation de Math.round pour éviter les erreurs de virgule flottante (ex: 3.9999 -> 4)
-        return Math.round((base * 5) * (Math.pow(1.2, count) - 1));
+        return count * base;
     };
 
     // --- GOOMBA ---
@@ -912,7 +908,7 @@ function buyLuigi() {
 function clickerLoop() {
     const getRate = (count, base) => {
         if (count <= 0) return 0;
-        return (base * 5) * (Math.pow(1.2, count) - 1);
+        return count * base;
     };
 
     const goombaRate = getRate(clickerData.goombaCount, 4);
@@ -920,7 +916,7 @@ function clickerLoop() {
     const peachRate = getRate(clickerData.peachCount, 40);
     const toadRate = getRate(clickerData.toadCount, 150);
     const luigiRate = getRate(clickerData.luigiCount, 450);
-
+    
     const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate;
 
     if (totalRatePerMinute > 0) {
@@ -957,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getRate = (count, base) => {
         if (count <= 0) return 0;
-        return (base * 5) * (Math.pow(1.2, count) - 1);
+        return count * base;
     };
 
     const goombaRate = getRate(clickerData.goombaCount, 4);
@@ -965,7 +961,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const peachRate = getRate(clickerData.peachCount, 40);
     const toadRate = getRate(clickerData.toadCount, 150);
     const luigiRate = getRate(clickerData.luigiCount, 450);
-
+    
     const totalRatePerMinute = goombaRate + yoshiRate + peachRate + toadRate + luigiRate;
 
     if (diffMs > 0 && totalRatePerMinute > 0) {
