@@ -85,7 +85,20 @@
 
             <div class="upgrades-list" style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 2px solid #555;">
                 <h3 style="margin-top:0; border-bottom: 1px solid #777; padding-bottom: 5px; color: #fff;">AMÉLIORATIONS</h3>
-                
+
+                <div class="upgrade-item" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="images/goomba.png" style="width: 50px; margin-right: 15px;">
+                        <div>
+                            <div style="font-weight: bold; font-size: 1.2rem; color: #A52A2A;">Goomba</div>
+                            <div style="font-size: 0.9rem; color: #ddd;">Petits pas (<span id="goombaRateDisplay">0</span>/min)</div>
+                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="goombaLevel">0</span></div>
+                        </div>
+                    </div>
+                    <button class="btn-buy" id="btnBuyGoomba" onclick="buyGoomba()" style="min-width: 100px;">
+                        <span id="goombaCost">50</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                    </button>
+                </div>
                 <div class="upgrade-item" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
                     <div style="display: flex; align-items: center;">
                         <img src="images/yoshi.png" style="width: 50px; margin-right: 15px;">
@@ -96,7 +109,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyYoshi" onclick="buyYoshi()" style="min-width: 100px;">
-                        <span id="yoshiCost">250</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="yoshiCost">300</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -110,7 +123,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyPeach" onclick="buyPeach()" style="min-width: 100px;">
-                        <span id="peachCost">500</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="peachCost">1000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -124,7 +137,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyToad" onclick="buyToad()" style="min-width: 100px;">
-                        <span id="toadCost">600</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="toadCost">3500</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -138,7 +151,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyLuigi" onclick="buyLuigi()" style="min-width: 100px;">
-                        <span id="luigiCost">1000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="luigiCost">10000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
             </div>
