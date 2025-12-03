@@ -56,7 +56,7 @@ const ALBUM_DATA = {
     'dk': { bio: "Le puissant gorille héritier du titre DK, petit-fils du Donkey Kong original devenu Cranky Kong. Gardien de l'île DK et de la réserve de bananes, il possède une force colossale et maîtrise les attaques au sol Ground Pound.", effect: "Aucun effet spécial.", type: 'neutral' },
     'koopa': { bio: "Les tortues bipèdes de l'armée Koopa, disponibles en variantes vertes et rouges. Leur carapace devient un projectile réutilisable une fois éjecté par un saut.​", effect: "Aucun effet spécial.", type: 'neutral' },
     'goomba': { bio: "L'ennemi iconique en forme de champignon marron, traître du Royaume Champignon ayant rejoint l'armée de Bowser. Premier obstacle de Super Mario Bros., écrasable d'un simple saut.", effect: "Aucun effet spécial.", type: 'neutral' },
-    'goombette': { bio: "La version féminine du Goomba, reconnaissable à son nœud rose. Apparaît dans divers jeux Mario en tant que personnage jouable.", effect: "Aucun effet spécial.", type: 'neutral' }, 
+    'goombette': { bio: "La version féminine du Goomba, reconnaissable à son nœud rose. Apparaît dans divers jeux Mario en tant que personnage jouable.", effect: "Aucun effet spécial.", type: 'neutral' },
     'fireflower': { bio: "Le Fire Flower, transformation classique permettant de lancer des boules de feu depuis Super Mario Bros..", effect: "BONUS : Trouve une paire automatiquement.", type: 'bonus' },
     'ghost': { bio: "Les fantômes Boo Diddly timides issus des Boos Mansion. Ils se figent et se cachent le visage quand on les regarde directement mais attaquent vicieusement quand on leur tourne le dos.", effect: "PIÈGE : Rend l'écran flou (Boo).", type: 'malus' },
     'bullet': { bio: "Les missiles anthropomorphes Bullet Bill de l'arsenal militaire Koopa. Tirés depuis des Bill Blaster, ils foncent en ligne droite avec une détermination implacable.", effect: "Aucun effet spécial.", type: 'neutral' },
@@ -975,13 +975,13 @@ function useInventoryItem(type) {
     if (isPaused || isGameOver || isBowserActive || lockBoard) return;
     if (inventory[type] <= 0) return;
 
-    // Check specific conditions preventing use
+    // Check conditions spécifiques
     if (type === 'iceflower' && isTimerFrozen) {
         // Feedback visuel (le timer tremble)
         const timerDisplay = document.getElementById('timer');
         timerDisplay.classList.add('shake');
         setTimeout(() => timerDisplay.classList.remove('shake'), 500);
-        playSound(document.getElementById('sfxBowser')); // Error sound
+        playSound(document.getElementById('sfxBowser')); // Son erreur
         return;
     }
 
@@ -1100,7 +1100,6 @@ function restartCurrentLevel() {
 function openCustomMenu() {
     startMenu.classList.remove('active');
     customMenu.classList.add('active');
-    // ... (restoration logic remains same)
 }
 
 function openSkinMenu() {
