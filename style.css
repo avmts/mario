@@ -982,7 +982,7 @@ input[type=range] {
 /* GRILLE DE SÉLECTION */
 .select-container {
     display: grid;
-    grid-template-columns: repeat(6, auto);
+    grid-template-columns: repeat(8, auto);
     gap: 10px;
     margin: 15px auto;
     max-width: 600px;
