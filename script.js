@@ -1050,7 +1050,7 @@ function clickerLoop() {
     const peachRate = getRate(clickerData.peachCount, 40);
     const toadRate = getRate(clickerData.toadCount, 150);
     const luigiRate = getRate(clickerData.luigiCount, 450);
-
+    
     const warioRate = getRate(clickerData.warioCount, 500);
     const bowserRate = getRate(clickerData.bowserCount, 2000);
     const harmonyRate = getRate(clickerData.harmonyCount, 12000);
@@ -1099,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const peachRate = getRate(clickerData.peachCount, 40);
     const toadRate = getRate(clickerData.toadCount, 150);
     const luigiRate = getRate(clickerData.luigiCount, 450);
-
+    
     const warioRate = getRate(clickerData.warioCount, 500);
     const bowserRate = getRate(clickerData.bowserCount, 2000);
     const harmonyRate = getRate(clickerData.harmonyCount, 12000);
