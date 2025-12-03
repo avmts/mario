@@ -888,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (offlineGains > 0) {
             totalCoins += offlineGains;
             console.log(`Gains hors ligne : ${offlineGains} pièces`);
-            // On pourrait afficher une popup ici
+            showOfflinePopup(offlineGains);
         }
     }
 
