@@ -2408,7 +2408,7 @@ function triggerShyGuyEffect() {
 }
 
 function triggerGoombetteEffect() {
-    // Spawn des cœurs
+    // Générer beaucoup de coeurs
     const count = 30;
     for (let i = 0; i < count; i++) {
         const x = Math.random() * window.innerWidth;
@@ -2424,7 +2424,7 @@ function spawnHeart(x, y) {
     const heart = document.createElement('div');
     heart.classList.add('heart-particle');
 
-    // Creation de la forme du cœur
+    // Créer la forme de coeur en CSS
     const heartShape = document.createElement('div');
     heartShape.classList.add('heart-shape');
     heart.appendChild(heartShape);
@@ -2432,9 +2432,9 @@ function spawnHeart(x, y) {
     heart.style.left = x + 'px';
     heart.style.top = y + 'px';
 
-    // Mouvements random pour l'animation
+    // Direction de mouvement aléatoire pour l'animation
     const xDir = (Math.random() - 0.5) * 200 + 'px';
-    const yDir = -Math.random() * 200 - 50 + 'px'; // Move up
+    const yDir = -Math.random() * 200 - 50 + 'px'; // Déplacement vers le haut général
 
     heart.style.setProperty('--x', xDir);
     heart.style.setProperty('--y', yDir);
@@ -2449,9 +2449,10 @@ function showOfflinePopup(amount) {
     popup.innerHTML = `<img src="images/coin.png" alt="Coin"> Gains hors ligne : +${amount} pièces !`;
     document.body.appendChild(popup);
 
+    // Suppression gérée par la durée de l'animation CSS, mais nettoyage du DOM par sécurité
     setTimeout(() => {
         popup.remove();
-    }, 4500); // 4s animation + 0.5s buffer
+    }, 4500); // Animation de 4s + 0.5s de marge
 }
 
 function triggerCherryEffect() {
