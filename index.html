@@ -70,7 +70,7 @@
                 <img src="images/block.png" style="height:60px;">
                 <h2 style="margin:0; color:#FBD000; font-size: 2.5rem; text-shadow: 2px 2px 0 #000;">MARIO CLICKER</h2>
             </div>
-            
+
             <div class="wallet-display">
                 <img src="images/coin.png" alt="Pièce">
                 <span id="clickerWallet">0</span>
@@ -85,7 +85,20 @@
 
             <div class="upgrades-list" style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 2px solid #555;">
                 <h3 style="margin-top:0; border-bottom: 1px solid #777; padding-bottom: 5px; color: #fff;">AMÉLIORATIONS</h3>
-                
+
+                <div class="upgrade-item" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="images/goomba.png" style="width: 50px; margin-right: 15px;">
+                        <div>
+                            <div style="font-weight: bold; font-size: 1.2rem; color: #A52A2A;">Goomba</div>
+                            <div style="font-size: 0.9rem; color: #ddd;">Petits pas (<span id="goombaRateDisplay">0</span>/min)</div>
+                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="goombaLevel">0</span></div>
+                        </div>
+                    </div>
+                    <button class="btn-buy" id="btnBuyGoomba" onclick="buyGoomba()" style="min-width: 100px;">
+                        <span id="goombaCost">50</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                    </button>
+                </div>
                 <div class="upgrade-item" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
                     <div style="display: flex; align-items: center;">
                         <img src="images/yoshi.png" style="width: 50px; margin-right: 15px;">
@@ -96,7 +109,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyYoshi" onclick="buyYoshi()" style="min-width: 100px;">
-                        <span id="yoshiCost">250</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="yoshiCost">300</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -110,7 +123,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyPeach" onclick="buyPeach()" style="min-width: 100px;">
-                        <span id="peachCost">500</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="peachCost">1000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -124,7 +137,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyToad" onclick="buyToad()" style="min-width: 100px;">
-                        <span id="toadCost">600</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="toadCost">3500</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -138,7 +151,7 @@
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyLuigi" onclick="buyLuigi()" style="min-width: 100px;">
-                        <span id="luigiCost">1000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="luigiCost">10000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
             </div>
@@ -166,11 +179,11 @@
                     <div class="item-info">
                         <h3>Champi Vie</h3>
                         <p>+1 Vie en pleine partie.</p>
-                        <div class="price">200 <img src="images/coin.png"></div>
+                        <div class="price">1500 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-mushroom">x0</span>
-                        <button class="btn-buy" onclick="buyItem('mushroom', 200)">ACHETER</button>
+                        <button class="btn-buy" onclick="buyItem('mushroom', 1500)">ACHETER</button>
                     </div>
                 </div>
 
@@ -179,11 +192,11 @@
                     <div class="item-info">
                         <h3>Chrono +</h3>
                         <p>Ajoute +15 secondes.</p>
-                        <div class="price">150 <img src="images/coin.png"></div>
+                        <div class="price">500 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-clock">x0</span>
-                        <button class="btn-buy" onclick="buyItem('clock', 150)">ACHETER</button>
+                        <button class="btn-buy" onclick="buyItem('clock', 500)">ACHETER</button>
                     </div>
                 </div>
 
@@ -192,11 +205,11 @@
                     <div class="item-info">
                         <h3>Super Étoile</h3>
                         <p>Révèle tout pendant 3s.</p>
-                        <div class="price">500 <img src="images/coin.png"></div>
+                        <div class="price">3000 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-star">x0</span>
-                        <button class="btn-buy" onclick="buyItem('star', 500)">ACHETER</button>
+                        <button class="btn-buy" onclick="buyItem('star', 3000)">ACHETER</button>
                     </div>
                 </div>
 
@@ -205,11 +218,11 @@
                     <div class="item-info">
                         <h3>Fleur de Feu</h3>
                         <p>Trouve une paire auto.</p>
-                        <div class="price">300 <img src="images/coin.png"></div>
+                        <div class="price">1200 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-fireflower">x0</span>
-                        <button class="btn-buy" onclick="buyItem('fireflower', 300)">ACHETER</button>
+                        <button class="btn-buy" onclick="buyItem('fireflower', 1200)">ACHETER</button>
                     </div>
                 </div>
 
@@ -218,11 +231,11 @@
                     <div class="item-info">
                         <h3>Fleur de Glace</h3>
                         <p>Gèle le temps (10s).</p>
-                        <div class="price">300 <img src="images/coin.png"></div>
+                        <div class="price">1000 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-iceflower">x0</span>
-                        <button class="btn-buy" onclick="buyItem('iceflower', 300)">ACHETER</button>
+                        <button class="btn-buy" onclick="buyItem('iceflower', 1000)">ACHETER</button>
                     </div>
                 </div>
 
@@ -231,11 +244,11 @@
                     <div class="item-info">
                         <h3 style="color:#b8860b">Bloc Surprise</h3>
                         <p>Utilise un objet au hasard !</p>
-                        <div class="price">250 <img src="images/coin.png"></div>
+                        <div class="price">800 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-mysteryblock" style="background:#b8860b;">x0</span>
-                        <button class="btn-buy" style="background:#FBD000; color:#b85c00;" onclick="buyItem('mysteryblock', 250)">ACHETER</button>
+                        <button class="btn-buy" style="background:#FBD000; color:#b85c00;" onclick="buyItem('mysteryblock', 800)">ACHETER</button>
                     </div>
                 </div>
             </div>
