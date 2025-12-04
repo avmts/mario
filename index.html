@@ -75,6 +75,7 @@
                 <img src="images/coin.png" alt="Pièce">
                 <span id="clickerWallet">0</span>
             </div>
+            <div id="totalCpmDisplay">0 pièces / min</div>
 
             <div class="clicker-area" style="margin: 30px 0; text-align: center;">
                 <div id="clickerBlockContainer" style="display: inline-block; position: relative;">
@@ -92,7 +93,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #A52A2A;">Goomba</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Petits pas (<span id="goombaRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="goombaLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="goombaLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyGoomba" onclick="buyGoomba()" style="min-width: 100px;">
@@ -105,7 +106,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #44D62C;">Yoshi</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Clique pour toi (<span id="yoshiRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="yoshiLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="yoshiLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyYoshi" onclick="buyYoshi()" style="min-width: 100px;">
@@ -119,7 +120,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #ff69b4;">Peach</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Aide royale (<span id="peachRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="peachLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="peachLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyPeach" onclick="buyPeach()" style="min-width: 100px;">
@@ -133,7 +134,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #E52521;">Toad</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Service rapide (<span id="toadRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="toadLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="toadLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyToad" onclick="buyToad()" style="min-width: 100px;">
@@ -147,7 +148,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #44D62C;">Luigi</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Super saut (<span id="luigiRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="luigiLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="luigiLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyLuigi" onclick="buyLuigi()" style="min-width: 100px;">
@@ -161,7 +162,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #FBD000;">Wario</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Cupidité (<span id="warioRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="warioLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="warioLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyWario" onclick="buyWario()" style="min-width: 100px;">
@@ -175,7 +176,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #E52521;">Bowser</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Force brute (<span id="bowserRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="bowserLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="bowserLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyBowser" onclick="buyBowser()" style="min-width: 100px;">
@@ -189,7 +190,7 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #00ffff;">Harmonie</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Magie stellaire (<span id="harmonyRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="harmonyLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="harmonyLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyHarmony" onclick="buyHarmony()" style="min-width: 100px;">
