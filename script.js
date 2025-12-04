@@ -711,6 +711,14 @@ function updateClickerUI() {
         cpmDisplay.innerText = totalRate.toLocaleString() + " pièces / min";
     }
 
+    const cpsDisplay = document.getElementById('totalCpsDisplay');
+    if (cpsDisplay) {
+        const cps = totalRate / 60;
+        // On affiche avec 1 décimale si ce n'est pas un entier
+        let formattedCps = cps % 1 === 0 ? cps : cps.toFixed(1);
+        cpsDisplay.innerText = formattedCps + " pièces / sec";
+    }
+
     // --- GOOMBA ---
     const goombaCostElem = document.getElementById('goombaCost');
     const goombaLevelElem = document.getElementById('goombaLevel');

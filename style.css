@@ -2123,3 +2123,15 @@ input[type="color"],
     font-size: 1.2rem;
     color: #FFD700;
 }
+
+#totalCpsDisplay {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #FFD700;
+    margin-top: -15px; /* Rapproche du CPM */
+    margin-bottom: 20px;
+    font-weight: bold;
+    opacity: 0.8;
+}
