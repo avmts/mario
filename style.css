@@ -2103,9 +2103,23 @@ input[type="color"],
     font-size: 0.8rem;
     color: #ff69b4; /* Rose visible pour le niveau */
     font-weight: bold;
-    text-shadow: 1px 1px 0 #000;
+}
+
+/* Animation de pulsation sans déplacement */
+@keyframes pulseScale {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 #totalCpmDisplay {
-    animation: pulseText 2s infinite;
+    animation: pulseScale 2s infinite;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #FFD700;
 }
