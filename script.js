@@ -695,6 +695,30 @@ function updateClickerUI() {
         return count * base;
     };
 
+    // --- CALCUL DU GAIN TOTAL ---
+    const totalRate =
+        getRate(clickerData.goombaCount, 4) +
+        getRate(clickerData.yoshiCount, 12) +
+        getRate(clickerData.peachCount, 40) +
+        getRate(clickerData.toadCount, 150) +
+        getRate(clickerData.luigiCount, 450) +
+        getRate(clickerData.warioCount, 500) +
+        getRate(clickerData.bowserCount, 2000) +
+        getRate(clickerData.harmonyCount, 12000);
+
+    const cpmDisplay = document.getElementById('totalCpmDisplay');
+    if (cpmDisplay) {
+        cpmDisplay.innerText = totalRate.toLocaleString() + " pièces / min";
+    }
+
+    const cpsDisplay = document.getElementById('totalCpsDisplay');
+    if (cpsDisplay) {
+        const cps = totalRate / 60;
+        // On affiche avec 1 décimale si ce n'est pas un entier
+        let formattedCps = cps % 1 === 0 ? cps : cps.toFixed(1);
+        cpsDisplay.innerText = formattedCps + " pièces / sec";
+    }
+
     // --- GOOMBA ---
     const goombaCostElem = document.getElementById('goombaCost');
     const goombaLevelElem = document.getElementById('goombaLevel');
