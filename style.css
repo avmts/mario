@@ -2097,3 +2097,41 @@ input[type="color"],
     margin-right: 8px;
     filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.3));
 }
+
+/* --- AJOUT POUR MARIO CLICKER --- */
+.level-text {
+    font-size: 0.8rem;
+    color: #ff69b4; /* Rose visible pour le niveau */
+    font-weight: bold;
+}
+
+/* Animation de pulsation sans déplacement */
+@keyframes pulseScale {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+#totalCpmDisplay {
+    animation: pulseScale 2s infinite;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #FFD700;
+}
+
+#totalCpsDisplay {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #FFD700;
+    margin-top: -15px; /* Rapproche du CPM */
+    margin-bottom: 20px;
+    font-weight: bold;
+    opacity: 0.8;
+}
