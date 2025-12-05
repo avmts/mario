@@ -2101,7 +2101,7 @@ input[type="color"],
 /* --- AJOUT POUR MARIO CLICKER --- */
 .level-text {
     font-size: 0.8rem;
-    color: #ff69b4; /* Rose visible pour le niveau */
+    color: #FF1493; /* Rose foncé pour le niveau */
     font-weight: bold;
 }
 
