@@ -241,21 +241,21 @@ let inventory = JSON.parse(localStorage.getItem('mario_inventory')) || {
 // --- DONNÉES DU CLICKER ---
 let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     goombaCount: 0,
-    goombaCost: 50,
+    goombaCost: 5000,
     yoshiCount: 0,
-    yoshiCost: 300,
+    yoshiCost: 30000,
     peachCount: 0,
-    peachCost: 1000,
+    peachCost: 100000,
     toadCount: 0,
-    toadCost: 3500,
+    toadCost: 350000,
     luigiCount: 0,
-    luigiCost: 10000,
+    luigiCost: 1000000,
     warioCount: 0,
-    warioCost: 15000,
+    warioCost: 1500000,
     bowserCount: 0,
-    bowserCost: 50000,
+    bowserCost: 5000000,
     harmonyCount: 0,
-    harmonyCost: 250000,
+    harmonyCost: 25000000,
     lastTime: Date.now(),
     coinBuffer: 0
 };
@@ -273,16 +273,17 @@ if (typeof clickerData.harmonyCount === 'undefined') clickerData.harmonyCount = 
 
 // Recalcul forcé des coûts actuels basé sur le niveau (count) pour garantir la cohérence avec la formule x1.2
 // Formule Standard : CoûtActuel = CoûtBase * (1.2 ^ Niveau)
-clickerData.goombaCost = Math.ceil(50 * Math.pow(1.2, clickerData.goombaCount));
-clickerData.yoshiCost = Math.ceil(300 * Math.pow(1.2, clickerData.yoshiCount));
-clickerData.peachCost = Math.ceil(1000 * Math.pow(1.2, clickerData.peachCount));
-clickerData.toadCost = Math.ceil(3500 * Math.pow(1.2, clickerData.toadCount));
-clickerData.luigiCost = Math.ceil(10000 * Math.pow(1.2, clickerData.luigiCount));
+// Augmentation des coûts de base (x100) pour l'équilibrage
+clickerData.goombaCost = Math.ceil(5000 * Math.pow(1.2, clickerData.goombaCount));
+clickerData.yoshiCost = Math.ceil(30000 * Math.pow(1.2, clickerData.yoshiCount));
+clickerData.peachCost = Math.ceil(100000 * Math.pow(1.2, clickerData.peachCount));
+clickerData.toadCost = Math.ceil(350000 * Math.pow(1.2, clickerData.toadCount));
+clickerData.luigiCost = Math.ceil(1000000 * Math.pow(1.2, clickerData.luigiCount));
 
 // Formule High-Tier (Wario, Bowser, Harmonie) : CoûtActuel = CoûtBase * (1.4 ^ Niveau)
-clickerData.warioCost = Math.ceil(15000 * Math.pow(1.4, clickerData.warioCount));
-clickerData.bowserCost = Math.ceil(50000 * Math.pow(1.4, clickerData.bowserCount));
-clickerData.harmonyCost = Math.ceil(250000 * Math.pow(1.4, clickerData.harmonyCount));
+clickerData.warioCost = Math.ceil(1500000 * Math.pow(1.4, clickerData.warioCount));
+clickerData.bowserCost = Math.ceil(5000000 * Math.pow(1.4, clickerData.bowserCount));
+clickerData.harmonyCost = Math.ceil(25000000 * Math.pow(1.4, clickerData.harmonyCount));
 
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
@@ -694,6 +695,30 @@ function updateClickerUI() {
         if (count <= 0) return 0;
         return count * base;
     };
+
+    // --- CALCUL DU GAIN TOTAL ---
+    const totalRate =
+        getRate(clickerData.goombaCount, 4) +
+        getRate(clickerData.yoshiCount, 12) +
+        getRate(clickerData.peachCount, 40) +
+        getRate(clickerData.toadCount, 150) +
+        getRate(clickerData.luigiCount, 450) +
+        getRate(clickerData.warioCount, 500) +
+        getRate(clickerData.bowserCount, 2000) +
+        getRate(clickerData.harmonyCount, 12000);
+
+    const cpmDisplay = document.getElementById('totalCpmDisplay');
+    if (cpmDisplay) {
+        cpmDisplay.innerText = totalRate.toLocaleString() + " pièces / min";
+    }
+
+    const cpsDisplay = document.getElementById('totalCpsDisplay');
+    if (cpsDisplay) {
+        const cps = totalRate / 60;
+        // On affiche avec 1 décimale si ce n'est pas un entier
+        let formattedCps = cps % 1 === 0 ? cps : cps.toFixed(1);
+        cpsDisplay.innerText = formattedCps + " pièces / sec";
+    }
 
     // --- GOOMBA ---
     const goombaCostElem = document.getElementById('goombaCost');

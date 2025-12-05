@@ -1,50 +1,44 @@
 
-import os
 from playwright.sync_api import sync_playwright
+import os
 
-def verify_clicker():
+def run():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+        context = browser.new_context()
+        page = context.new_page()
 
-        # Load the page locally
-        cwd = os.getcwd()
-        page.goto(f"file://{cwd}/index.html")
+        # Load the local HTML file
+        # Assuming we are in the root and index.html is there
+        page.goto('file://' + os.path.abspath('index.html'))
 
-        # Inject coins into localStorage to allow buying
-        page.evaluate("localStorage.setItem('mario_total_coins', '100000')")
-        page.reload()
+        # Open the Clicker Menu (since it's an overlay initially hidden)
+        # We need to click the 'MARIO CLICKER' button in #startMenu
+        # The button has text 'MARIO CLICKER'
+        page.click('text=MARIO CLICKER')
 
-        # Open Clicker Menu
-        page.click("button:has-text('MARIO CLICKER')")
-
-        # Wait for animation
+        # Wait for animation (overlay fade in)
         page.wait_for_timeout(1000)
 
-        # Verify Goomba exists and check cost
-        goomba_cost = page.locator("#goombaCost").inner_text()
-        print(f"Goomba Cost: {goomba_cost}")
+        # Check if the CPM display exists and has text
+        cpm = page.locator('#totalCpmDisplay')
+        print(f'CPM Text: {cpm.inner_text()}')
 
-        yoshi_cost = page.locator("#yoshiCost").inner_text()
-        print(f"Yoshi Cost: {yoshi_cost}")
+        # Check color of level text
+        level_texts = page.locator('.level-text')
+        count = level_texts.count()
+        print(f'Found {count} level text elements')
 
-        # Buy Goomba
-        page.click("#btnBuyGoomba")
-        page.wait_for_timeout(500)
-
-        # Check new cost (should be 50 * 1.2 = 60)
-        new_goomba_cost = page.locator("#goombaCost").inner_text()
-        print(f"New Goomba Cost: {new_goomba_cost}")
-
-        # Check rate display (should be 4*5*(1.2-1) = 4)
-        goomba_rate = page.locator("#goombaRateDisplay").inner_text()
-        print(f"Goomba Rate: {goomba_rate}")
+        if count > 0:
+            first_level = level_texts.first
+            # Get computed style
+            color = first_level.evaluate('el => window.getComputedStyle(el).color')
+            print(f'Level text color: {color}')
 
         # Take screenshot
-        os.makedirs("verification", exist_ok=True)
-        page.screenshot(path="verification/clicker_verification.png")
+        page.screenshot(path='verification/clicker_ui.png')
 
         browser.close()
 
-if __name__ == "__main__":
-    verify_clicker()
+if __name__ == '__main__':
+    run()
