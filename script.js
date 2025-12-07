@@ -260,6 +260,21 @@ let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     coinBuffer: 0
 };
 
+// --- DONNÉES BOSS CLICKER ---
+let bossData = JSON.parse(localStorage.getItem('mario_boss_data')) || {
+    level: 1,
+    currentHp: 1000,
+    maxHp: 1000,
+    isActive: false,
+    spawnTime: 0,
+    despawnTime: 0,
+    nextSpawnTime: 0 // Date.now() pour spawn immédiat au premier lancement si on veut, ou plus tard
+};
+
+if (bossData.nextSpawnTime === 0) {
+    bossData.nextSpawnTime = Date.now(); // Premier spawn immédiat
+}
+
 // --- STATISTIQUES GLOBALES ---
 let globalStats = JSON.parse(localStorage.getItem('mario_global_stats')) || {
     totalTimePlayed: 0, // secondes
@@ -327,6 +342,9 @@ function saveEconomy() {
     // Sauvegarde du clicker
     clickerData.lastTime = Date.now();
     localStorage.setItem('mario_clicker_data', JSON.stringify(clickerData));
+
+    // Sauvegarde du Boss
+    localStorage.setItem('mario_boss_data', JSON.stringify(bossData));
 }
 
 // --- DESCRIPTIONS DES POUVOIRS ---
@@ -704,6 +722,9 @@ function openClickerMenu() {
 function updateClickerUI() {
     updateWalletDisplay();
 
+    // Vérification état Boss
+    checkBossStatus();
+
     // Fonction utilitaire pour calculer le rendu linéaire (Count * Base)
     // Production Totale = Niveau * ProductionDeBase
     const getRate = (count, base) => {
@@ -1080,6 +1101,9 @@ function buyHarmony() {
 }
 
 function clickerLoop() {
+    // Vérification du Boss à chaque tick (1s)
+    checkBossStatus();
+
     const getRate = (count, base) => {
         if (count <= 0) return 0;
         return count * base;
@@ -2912,5 +2936,120 @@ function openStatsMenu() {
         document.getElementById('statFavChar').innerText = `${charName} (${maxCharCount} fois)`;
     } else {
         document.getElementById('statFavChar').innerText = "Aucun";
+    }
+}
+
+// --- LOGIQUE BOSS CLICKER ---
+function checkBossStatus() {
+    const now = Date.now();
+    const bossContainer = document.getElementById('bossContainer');
+
+    // Si Boss Actif
+    if (bossData.isActive) {
+        // Vérification du temps restant (5h = 5 * 60 * 60 * 1000 = 18000000 ms)
+        if (now > bossData.despawnTime) {
+            // DÉFAITE (Timeout)
+            bossData.isActive = false;
+            // Réapparait 8h après (8 * 60 * 60 * 1000 = 28800000 ms)
+            bossData.nextSpawnTime = now + 28800000;
+            // Le niveau NE change PAS en cas de défaite (sauf si niveau 1, mais la règle "niveau suivant si victoire, sinon reste" s'applique)
+            // On s'assure que currentHp est reset pour le prochain spawn
+            bossData.currentHp = bossData.maxHp;
+
+            saveEconomy();
+            if (bossContainer) bossContainer.style.display = 'none';
+        } else {
+            // Toujours Actif : Mise à jour Timer
+            if (bossContainer) {
+                bossContainer.style.display = 'block';
+                updateBossUI();
+            }
+        }
+    } else {
+        // Boss Inactif : Vérification Spawn
+        if (now > bossData.nextSpawnTime) {
+            // SPAWN !
+            bossData.isActive = true;
+            bossData.spawnTime = now;
+            bossData.despawnTime = now + 18000000; // 5h
+            bossData.currentHp = bossData.maxHp; // Reset HP au Max
+            saveEconomy();
+
+            if (bossContainer) bossContainer.style.display = 'block';
+            updateBossUI();
+        } else {
+            if (bossContainer) bossContainer.style.display = 'none';
+        }
+    }
+}
+
+function updateBossUI() {
+    const now = Date.now();
+    const timeLeft = Math.max(0, bossData.despawnTime - now);
+
+    // Format Timer HH:MM:SS
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    const timerStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    document.getElementById('bossTimer').innerText = timerStr;
+    document.getElementById('bossLevelText').innerText = `BOSS NIV. ${bossData.level}`;
+
+    const hpPercent = (bossData.currentHp / bossData.maxHp) * 100;
+    document.getElementById('bossHpBar').style.width = hpPercent + '%';
+    document.getElementById('bossHpText').innerText = `${Math.ceil(bossData.currentHp)} / ${Math.ceil(bossData.maxHp)}`;
+
+    // Récompense = 2.5 * MaxHP
+    const reward = Math.floor(bossData.maxHp * 2.5);
+    document.getElementById('bossReward').innerText = reward.toLocaleString();
+}
+
+function hitBoss() {
+    if (!bossData.isActive) return;
+
+    // Animation de secousse
+    const img = document.getElementById('bossImage');
+    img.classList.remove('shake-boss');
+    void img.offsetWidth; // Trigger reflow
+    img.classList.add('shake-boss');
+
+    // Dégâts (1 clic = 1 dégât pour l'instant)
+    bossData.currentHp -= 1;
+
+    // Mise à jour visuelle immédiate
+    updateBossUI();
+
+    if (bossData.currentHp <= 0) {
+        // VICTOIRE !
+        bossData.isActive = false;
+
+        // Gain
+        const reward = Math.floor(bossData.maxHp * 2.5);
+        totalCoins += reward;
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, `JACKPOT ! +${reward}`, "#FBD000");
+        spawnConfetti();
+
+        // Niveau suivant
+        bossData.level++;
+        // HP x 1.4
+        bossData.maxHp = Math.ceil(bossData.maxHp * 1.4);
+
+        // Cooldown 8h
+        bossData.nextSpawnTime = Date.now() + 28800000;
+
+        saveEconomy();
+        updateWalletDisplay();
+        document.getElementById('bossContainer').style.display = 'none';
+
+        playSound(document.getElementById('sfxBowser')); // Ou son de victoire spécifique
+    }
+}
+
+function spawnConfetti() {
+    // Réutilisation simple de launchConfetti ou version simplifiée
+    if (typeof launchConfetti === 'function') {
+        launchConfetti();
     }
 }
