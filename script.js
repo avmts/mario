@@ -241,24 +241,51 @@ let inventory = JSON.parse(localStorage.getItem('mario_inventory')) || {
 // --- DONNÉES DU CLICKER ---
 let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     goombaCount: 0,
-    goombaCost: 50,
+    goombaCost: 5000,
     yoshiCount: 0,
-    yoshiCost: 300,
+    yoshiCost: 30000,
     peachCount: 0,
-    peachCost: 1000,
+    peachCost: 100000,
     toadCount: 0,
-    toadCost: 3500,
+    toadCost: 350000,
     luigiCount: 0,
-    luigiCost: 10000,
+    luigiCost: 1000000,
     warioCount: 0,
-    warioCost: 15000,
+    warioCost: 1500000,
     bowserCount: 0,
-    bowserCost: 50000,
+    bowserCost: 5000000,
     harmonyCount: 0,
-    harmonyCost: 250000,
+    harmonyCost: 25000000,
     lastTime: Date.now(),
     coinBuffer: 0
 };
+
+// --- DONNÉES BOSS CLICKER ---
+let bossData = JSON.parse(localStorage.getItem('mario_boss_data')) || {
+    level: 1,
+    currentHp: 1000,
+    maxHp: 1000,
+    isActive: false,
+    spawnTime: 0,
+    despawnTime: 0,
+    nextSpawnTime: 0 // Date.now() pour spawn immédiat au premier lancement si on veut, ou plus tard
+};
+
+if (bossData.nextSpawnTime === 0) {
+    bossData.nextSpawnTime = Date.now(); // Premier spawn immédiat
+}
+
+// --- STATISTIQUES GLOBALES ---
+let globalStats = JSON.parse(localStorage.getItem('mario_global_stats')) || {
+    totalTimePlayed: 0, // secondes
+    totalFlips: 0,
+    trapsTriggered: {},
+    charactersSelected: {}
+};
+
+function saveGlobalStats() {
+    localStorage.setItem('mario_global_stats', JSON.stringify(globalStats));
+}
 
 // Migration et Initialisation des coûts pour s'adapter à la nouvelle formule exponentielle (x1.2)
 // On s'assure que toutes les clés existent
@@ -273,16 +300,17 @@ if (typeof clickerData.harmonyCount === 'undefined') clickerData.harmonyCount = 
 
 // Recalcul forcé des coûts actuels basé sur le niveau (count) pour garantir la cohérence avec la formule x1.2
 // Formule Standard : CoûtActuel = CoûtBase * (1.2 ^ Niveau)
-clickerData.goombaCost = Math.ceil(50 * Math.pow(1.2, clickerData.goombaCount));
-clickerData.yoshiCost = Math.ceil(300 * Math.pow(1.2, clickerData.yoshiCount));
-clickerData.peachCost = Math.ceil(1000 * Math.pow(1.2, clickerData.peachCount));
-clickerData.toadCost = Math.ceil(3500 * Math.pow(1.2, clickerData.toadCount));
-clickerData.luigiCost = Math.ceil(10000 * Math.pow(1.2, clickerData.luigiCount));
+// Augmentation des coûts de base (x100) pour l'équilibrage
+clickerData.goombaCost = Math.ceil(5000 * Math.pow(1.2, clickerData.goombaCount));
+clickerData.yoshiCost = Math.ceil(30000 * Math.pow(1.2, clickerData.yoshiCount));
+clickerData.peachCost = Math.ceil(100000 * Math.pow(1.2, clickerData.peachCount));
+clickerData.toadCost = Math.ceil(350000 * Math.pow(1.2, clickerData.toadCount));
+clickerData.luigiCost = Math.ceil(1000000 * Math.pow(1.2, clickerData.luigiCount));
 
 // Formule High-Tier (Wario, Bowser, Harmonie) : CoûtActuel = CoûtBase * (1.4 ^ Niveau)
-clickerData.warioCost = Math.ceil(15000 * Math.pow(1.4, clickerData.warioCount));
-clickerData.bowserCost = Math.ceil(50000 * Math.pow(1.4, clickerData.bowserCount));
-clickerData.harmonyCost = Math.ceil(250000 * Math.pow(1.4, clickerData.harmonyCount));
+clickerData.warioCost = Math.ceil(1500000 * Math.pow(1.4, clickerData.warioCount));
+clickerData.bowserCost = Math.ceil(5000000 * Math.pow(1.4, clickerData.bowserCount));
+clickerData.harmonyCost = Math.ceil(25000000 * Math.pow(1.4, clickerData.harmonyCount));
 
 // Migration simple validation si l'objet n'existe pas
 if (typeof inventory.mushroom === 'undefined') inventory.mushroom = 0;
@@ -314,6 +342,9 @@ function saveEconomy() {
     // Sauvegarde du clicker
     clickerData.lastTime = Date.now();
     localStorage.setItem('mario_clicker_data', JSON.stringify(clickerData));
+
+    // Sauvegarde du Boss
+    localStorage.setItem('mario_boss_data', JSON.stringify(bossData));
 }
 
 // --- DESCRIPTIONS DES POUVOIRS ---
@@ -612,6 +643,9 @@ function goToMainMenu() {
     albumMenu.classList.remove('active');
     shopMenu.classList.remove('active');
 
+    const statsMenu = document.getElementById('statsMenu');
+    if (statsMenu) statsMenu.classList.remove('active');
+
     if (bgMenu) bgMenu.classList.remove('active');
     if (musicMenu) musicMenu.classList.remove('active');
     if (clickerMenu) clickerMenu.classList.remove('active');
@@ -688,12 +722,39 @@ function openClickerMenu() {
 function updateClickerUI() {
     updateWalletDisplay();
 
+    // Vérification état Boss
+    checkBossStatus();
+
     // Fonction utilitaire pour calculer le rendu linéaire (Count * Base)
     // Production Totale = Niveau * ProductionDeBase
     const getRate = (count, base) => {
         if (count <= 0) return 0;
         return count * base;
     };
+
+    // --- CALCUL DU GAIN TOTAL ---
+    const totalRate =
+        getRate(clickerData.goombaCount, 4) +
+        getRate(clickerData.yoshiCount, 12) +
+        getRate(clickerData.peachCount, 40) +
+        getRate(clickerData.toadCount, 150) +
+        getRate(clickerData.luigiCount, 450) +
+        getRate(clickerData.warioCount, 500) +
+        getRate(clickerData.bowserCount, 2000) +
+        getRate(clickerData.harmonyCount, 12000);
+
+    const cpmDisplay = document.getElementById('totalCpmDisplay');
+    if (cpmDisplay) {
+        cpmDisplay.innerText = totalRate.toLocaleString() + " pièces / min";
+    }
+
+    const cpsDisplay = document.getElementById('totalCpsDisplay');
+    if (cpsDisplay) {
+        const cps = totalRate / 60;
+        // On affiche avec 1 décimale si ce n'est pas un entier
+        let formattedCps = cps % 1 === 0 ? cps : cps.toFixed(1);
+        cpsDisplay.innerText = formattedCps + " pièces / sec";
+    }
 
     // --- GOOMBA ---
     const goombaCostElem = document.getElementById('goombaCost');
@@ -1040,6 +1101,9 @@ function buyHarmony() {
 }
 
 function clickerLoop() {
+    // Vérification du Boss à chaque tick (1s)
+    checkBossStatus();
+
     const getRate = (count, base) => {
         if (count <= 0) return 0;
         return count * base;
@@ -1688,6 +1752,16 @@ function randomSelection() {
 
 function confirmSelection() {
     if (selectedCharsForGame.length !== targetPairCount) return;
+
+    // Tracking persos favoris
+    selectedCharsForGame.forEach(char => {
+        if (!globalStats.charactersSelected[char.name]) {
+            globalStats.charactersSelected[char.name] = 0;
+        }
+        globalStats.charactersSelected[char.name]++;
+    });
+    saveGlobalStats();
+
     selectionMenu.classList.remove('active');
     startCountdown();
 }
@@ -1865,6 +1939,12 @@ function launchGameLogic() {
 function updateTimer() {
     if (isPaused || isBowserActive || isTimerFrozen) return;
     timeLeft--;
+
+    // Tracking temps de jeu
+    globalStats.totalTimePlayed++;
+    // Sauvegarde périodique (toutes les 10s pour éviter trop d'IO) ou à la fin
+    if (timeLeft % 10 === 0) saveGlobalStats();
+
     checkDangerState();
     timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
     if (timeLeft <= 10) {
@@ -1882,6 +1962,11 @@ function flipCard() {
     if (this.classList.contains('chained-shake')) return;
     if (lockBoard || isPaused) return;
     if (this === firstCard) return;
+
+    // Tracking flips
+    globalStats.totalFlips++;
+    saveGlobalStats();
+
     playSound(document.getElementById('sfxFlip'));
     this.style.transform = '';
     this.classList.remove('tilting');
@@ -1911,6 +1996,8 @@ function disableCards() {
     firstCard.removeEventListener('click', flipCard);
     secondCard.removeEventListener('click', flipCard);
     if (firstCard.dataset.name === 'bobomb') {
+        // Tracking piège
+        trackTrap('bobomb');
         lockBoard = true;
         playSound(sfxExplosion);
         firstCard.classList.add('bomb-explode');
@@ -2055,6 +2142,7 @@ function triggerStarEffect() {
 }
 
 function triggerBowserEffect() {
+    trackTrap('bowser');
     isBowserActive = true;
     lockBoard = true;
     bgMusic.pause();
@@ -2161,6 +2249,7 @@ function resetBoard() {
 function gameOver(title, text) {
     isGameOver = true;
     clearInterval(timerInterval);
+    saveGlobalStats(); // Sauvegarde finale des stats temps
     bgMusic.pause();
     bgMusic.currentTime = 0;
     bgMusic.playbackRate = 1.0;
@@ -2189,6 +2278,7 @@ function gameOver(title, text) {
 function handleVictory() {
     isGameOver = true;
     clearInterval(timerInterval);
+    saveGlobalStats(); // Sauvegarde finale des stats temps
     bgMusic.pause();
     bgMusic.currentTime = 0;
     bgMusic.playbackRate = 1.0;
@@ -2331,6 +2421,7 @@ function triggerFireFlowerEffect() {
 }
 
 function triggerGhostEffect() {
+    trackTrap('ghost');
     const board = document.getElementById('gameBoard');
     ghostMode = 1;
     board.classList.add('ghost-blur');
@@ -2343,6 +2434,7 @@ function triggerGhostEffect() {
 }
 
 function triggerBlooperEffect() {
+    trackTrap('blooper');
     blooperMode = 1;
     playSound(document.getElementById('sfxSplat'));
     for (let i = 0; i < 20; i++) {
@@ -2363,6 +2455,7 @@ function triggerBlooperEffect() {
 }
 
 function triggerKamekEffect() {
+    trackTrap('kamek');
     let swapCount = 2;
     if (currentLevelKey === 'easy') swapCount = 2;
     else if (currentLevelKey === 'medium') swapCount = 3;
@@ -2448,6 +2541,7 @@ function checkDangerState() {
 }
 
 function triggerIceEffect() {
+    trackTrap('iceflower');
     let freezeDuration = 0;
     if (currentLevelKey === 'easy') freezeDuration = 3000;
     else if (currentLevelKey === 'medium') freezeDuration = 5000;
@@ -2493,6 +2587,7 @@ function trigger1UpEffect() {
 }
 
 function triggerChompEffect() {
+    trackTrap('chainchomp');
     let chainsCount = 0;
     let p = 0;
     if (currentLevelKey === 'easy') p = 6;
@@ -2535,6 +2630,7 @@ function triggerChompEffect() {
 }
 
 function triggerThunderEffect() {
+    trackTrap('lightning');
     let duration = 5000;
     if (currentLevelKey === 'medium') duration = 8000;
     else if (currentLevelKey === 'hard') duration = 12000;
@@ -2563,6 +2659,7 @@ function triggerThunderEffect() {
 }
 
 function triggerPoisonEffect() {
+    trackTrap('poison');
     isPoisonActive = true;
     document.body.classList.add('rotate-screen');
     document.body.classList.add('poison-fog');
@@ -2581,6 +2678,7 @@ function triggerPoisonEffect() {
 }
 
 function triggerShyGuyEffect() {
+    trackTrap('shyguy');
     clearShyGuyEffect();
     isShyGuyActive = true;
     document.body.classList.add('shyguy-mode');
@@ -2681,6 +2779,7 @@ function showOfflinePopup(amount) {
 }
 
 function triggerCherryEffect() {
+    trackTrap('cherry');
     isCherryActive = true;
     spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "DOUBLE CURSEUR ! 🍒", "#ff69b4");
     showStatusIcon('cherry', 15000, 'images/cherry.png');
@@ -2783,4 +2882,174 @@ function triggerCherryEffect() {
     setTimeout(() => {
         clearCherryEffect();
     }, 15000);
+}
+
+// --- FONCTIONS STATS ---
+function trackTrap(trapName) {
+    if (!globalStats.trapsTriggered[trapName]) {
+        globalStats.trapsTriggered[trapName] = 0;
+    }
+    globalStats.trapsTriggered[trapName]++;
+    saveGlobalStats();
+}
+
+function openStatsMenu() {
+    startMenu.classList.remove('active');
+    document.getElementById('statsMenu').classList.add('active');
+
+    // 1. Temps total
+    const totalSeconds = globalStats.totalTimePlayed;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    document.getElementById('statTotalTime').innerText = `${hours}h ${minutes}m`;
+
+    // 2. Cartes retournées
+    document.getElementById('statTotalFlips').innerText = globalStats.totalFlips;
+
+    // 3. Piège fréquent
+    let maxTrap = "Aucun";
+    let maxTrapCount = 0;
+    for (const [trap, count] of Object.entries(globalStats.trapsTriggered)) {
+        if (count > maxTrapCount) {
+            maxTrapCount = count;
+            maxTrap = trap;
+        }
+    }
+    if (maxTrap !== "Aucun") {
+        const trapName = frenchNames[maxTrap] || maxTrap;
+        document.getElementById('statTopTrap').innerText = `${trapName} (${maxTrapCount} fois)`;
+    } else {
+        document.getElementById('statTopTrap').innerText = "Aucun";
+    }
+
+    // 4. Perso favori
+    let maxChar = "Aucun";
+    let maxCharCount = 0;
+    for (const [char, count] of Object.entries(globalStats.charactersSelected)) {
+        if (count > maxCharCount) {
+            maxCharCount = count;
+            maxChar = char;
+        }
+    }
+    if (maxChar !== "Aucun") {
+        const charName = frenchNames[maxChar] || maxChar;
+        document.getElementById('statFavChar').innerText = `${charName} (${maxCharCount} fois)`;
+    } else {
+        document.getElementById('statFavChar').innerText = "Aucun";
+    }
+}
+
+// --- LOGIQUE BOSS CLICKER ---
+function checkBossStatus() {
+    const now = Date.now();
+    const bossContainer = document.getElementById('bossContainer');
+
+    // Si Boss Actif
+    if (bossData.isActive) {
+        // Vérification du temps restant (5h = 5 * 60 * 60 * 1000 = 18000000 ms)
+        if (now > bossData.despawnTime) {
+            // DÉFAITE (Timeout)
+            bossData.isActive = false;
+            // Réapparait 8h après (8 * 60 * 60 * 1000 = 28800000 ms)
+            bossData.nextSpawnTime = now + 28800000;
+            // Le niveau NE change PAS en cas de défaite (sauf si niveau 1, mais la règle "niveau suivant si victoire, sinon reste" s'applique)
+            // On s'assure que currentHp est reset pour le prochain spawn
+            bossData.currentHp = bossData.maxHp;
+
+            saveEconomy();
+            if (bossContainer) bossContainer.style.display = 'none';
+        } else {
+            // Toujours Actif : Mise à jour Timer
+            if (bossContainer) {
+                bossContainer.style.display = 'block';
+                updateBossUI();
+            }
+        }
+    } else {
+        // Boss Inactif : Vérification Spawn
+        if (now > bossData.nextSpawnTime) {
+            // SPAWN !
+            bossData.isActive = true;
+            bossData.spawnTime = now;
+            bossData.despawnTime = now + 18000000; // 5h
+            bossData.currentHp = bossData.maxHp; // Reset HP au Max
+            saveEconomy();
+
+            if (bossContainer) bossContainer.style.display = 'block';
+            updateBossUI();
+        } else {
+            if (bossContainer) bossContainer.style.display = 'none';
+        }
+    }
+}
+
+function updateBossUI() {
+    const now = Date.now();
+    const timeLeft = Math.max(0, bossData.despawnTime - now);
+
+    // Format Timer HH:MM:SS
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    const timerStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    document.getElementById('bossTimer').innerText = timerStr;
+    document.getElementById('bossLevelText').innerText = `BOSS NIV. ${bossData.level}`;
+
+    const hpPercent = (bossData.currentHp / bossData.maxHp) * 100;
+    document.getElementById('bossHpBar').style.width = hpPercent + '%';
+    document.getElementById('bossHpText').innerText = `${Math.ceil(bossData.currentHp)} / ${Math.ceil(bossData.maxHp)}`;
+
+    // Récompense = 2.5 * MaxHP
+    const reward = Math.floor(bossData.maxHp * 2.5);
+    document.getElementById('bossReward').innerText = reward.toLocaleString();
+}
+
+function hitBoss() {
+    if (!bossData.isActive) return;
+
+    // Animation de secousse
+    const img = document.getElementById('bossImage');
+    img.classList.remove('shake-boss');
+    void img.offsetWidth; // Trigger reflow
+    img.classList.add('shake-boss');
+
+    // Dégâts (1 clic = 1 dégât pour l'instant)
+    bossData.currentHp -= 1;
+
+    // Mise à jour visuelle immédiate
+    updateBossUI();
+
+    if (bossData.currentHp <= 0) {
+        // VICTOIRE !
+        bossData.isActive = false;
+
+        // Gain
+        const reward = Math.floor(bossData.maxHp * 2.5);
+        totalCoins += reward;
+        spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, `JACKPOT ! +${reward}`, "#FBD000");
+        spawnConfetti();
+
+        // Niveau suivant
+        bossData.level++;
+        // HP x 1.4
+        bossData.maxHp = Math.ceil(bossData.maxHp * 1.4);
+
+        // Cooldown 8h
+        bossData.nextSpawnTime = Date.now() + 28800000;
+
+        saveEconomy();
+        updateWalletDisplay();
+        document.getElementById('bossContainer').style.display = 'none';
+
+        playSound(document.getElementById('sfxBowser')); // Ou son de victoire spécifique
+    }
+}
+
+function spawnConfetti() {
+    // Réutilisation simple de launchConfetti ou version simplifiée
+    if (typeof launchConfetti === 'function') {
+        launchConfetti();
+    }
 }
