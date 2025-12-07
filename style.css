@@ -2185,4 +2185,5 @@ input[type="color"],
 #bossCooldownContainer {
     font-size: 0.9rem;
     animation: pulse 2s infinite;
+    color: #ff3333; /* Rouge */
 }
