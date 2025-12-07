@@ -260,12 +260,6 @@ let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     coinBuffer: 0
 };
 
-// --- LISTE DES BOSS (PERSONNAGES PIÈGES) ---
-const BOSS_CANDIDATES = [
-    'bowser', 'ghost', 'blooper', 'kamek', 'bobomb',
-    'iceflower', 'chainchomp', 'lightning', 'poison', 'shyguy', 'cherry'
-];
-
 // --- DONNÉES BOSS CLICKER ---
 let bossData = JSON.parse(localStorage.getItem('mario_boss_data')) || {
     level: 1,
@@ -275,16 +269,14 @@ let bossData = JSON.parse(localStorage.getItem('mario_boss_data')) || {
     spawnTime: 0,
     despawnTime: 0,
     nextSpawnTime: 0, // Date.now() pour spawn immédiat au premier lancement si on veut, ou plus tard
-    character: 'bowser' // Boss par défaut
+    bossCharacter: 'bowser' // Boss par défaut
 };
 
 if (bossData.nextSpawnTime === 0) {
     bossData.nextSpawnTime = Date.now(); // Premier spawn immédiat
 }
-// Migration : si character manquant
-if (!bossData.character) {
-    bossData.character = 'bowser';
-}
+
+const BOSS_CHARACTERS = ['bowser', 'ghost', 'blooper', 'kamek', 'bobomb', 'iceflower', 'chainchomp', 'lightning', 'poison', 'shyguy', 'cherry'];
 
 // --- STATISTIQUES GLOBALES ---
 let globalStats = JSON.parse(localStorage.getItem('mario_global_stats')) || {
@@ -2954,25 +2946,23 @@ function openStatsMenu() {
 function checkBossStatus() {
     const now = Date.now();
     const bossContainer = document.getElementById('bossContainer');
+    const cooldownContainer = document.getElementById('bossCooldownContainer');
 
     // Si Boss Actif
     if (bossData.isActive) {
+        if (cooldownContainer) cooldownContainer.style.display = 'none';
+
         // Vérification du temps restant (5h = 5 * 60 * 60 * 1000 = 18000000 ms)
         if (now > bossData.despawnTime) {
             // DÉFAITE (Timeout)
             bossData.isActive = false;
             // Réapparait 8h après (8 * 60 * 60 * 1000 = 28800000 ms)
             bossData.nextSpawnTime = now + 28800000;
-            // Le niveau NE change PAS en cas de défaite (sauf si niveau 1, mais la règle "niveau suivant si victoire, sinon reste" s'applique)
-            // On s'assure que currentHp est reset pour le prochain spawn
+            // Le niveau NE change PAS en cas de défaite
             bossData.currentHp = bossData.maxHp;
 
             saveEconomy();
-            // On continue d'afficher le conteneur pour le timer de respawn
-            if (bossContainer) {
-                bossContainer.style.display = 'block';
-                updateBossUI();
-            }
+            if (bossContainer) bossContainer.style.display = 'none';
         } else {
             // Toujours Actif : Mise à jour Timer
             if (bossContainer) {
@@ -2984,24 +2974,31 @@ function checkBossStatus() {
         // Boss Inactif : Vérification Spawn
         if (now > bossData.nextSpawnTime) {
             // SPAWN !
+            if (cooldownContainer) cooldownContainer.style.display = 'none';
             bossData.isActive = true;
             bossData.spawnTime = now;
             bossData.despawnTime = now + 18000000; // 5h
             bossData.currentHp = bossData.maxHp; // Reset HP au Max
 
-            // Sélection nouveau Boss Aléatoire
-            const randIndex = Math.floor(Math.random() * BOSS_CANDIDATES.length);
-            bossData.character = BOSS_CANDIDATES[randIndex];
+            // Choix aléatoire du Boss
+            const randomBoss = BOSS_CHARACTERS[Math.floor(Math.random() * BOSS_CHARACTERS.length)];
+            bossData.bossCharacter = randomBoss;
 
             saveEconomy();
 
             if (bossContainer) bossContainer.style.display = 'block';
             updateBossUI();
         } else {
-            // En attente de respawn : on affiche le timer
-            if (bossContainer) {
-                bossContainer.style.display = 'block';
-                updateBossUI();
+            // EN ATTENTE (COOLDOWN)
+            if (bossContainer) bossContainer.style.display = 'none';
+            if (cooldownContainer) {
+                cooldownContainer.style.display = 'block';
+                const timeLeft = Math.max(0, bossData.nextSpawnTime - now);
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                const timerStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('bossCooldownTimer').innerText = timerStr;
             }
         }
     }
@@ -3009,63 +3006,6 @@ function checkBossStatus() {
 
 function updateBossUI() {
     const now = Date.now();
-    const bossContainer = document.getElementById('bossContainer');
-    const bossImage = document.getElementById('bossImage');
-    const bossLevelText = document.getElementById('bossLevelText');
-    const bossTimer = document.getElementById('bossTimer');
-    const bossHpBar = document.getElementById('bossHpBar');
-    const bossHpText = document.getElementById('bossHpText');
-    const bossReward = document.getElementById('bossReward');
-
-    // Mise à jour de l'image selon le personnage actuel
-    const charName = bossData.character || 'bowser';
-    const frenchName = frenchNames[charName] || charName.toUpperCase();
-
-    // Si boss inactif (en attente de respawn)
-    if (!bossData.isActive) {
-        bossContainer.classList.add('boss-inactive');
-
-        const timeLeft = Math.max(0, bossData.nextSpawnTime - now);
-
-        // Format Timer HH:MM:SS
-        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        const timerStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-        bossLevelText.innerText = "BOSS EN APPROCHE...";
-        bossTimer.innerText = timerStr;
-        bossTimer.style.color = "#aaa";
-
-        // Visuel "grisé" ou caché
-        // On garde l'image du dernier boss mais grisée/transparente
-        bossImage.src = `images/${charName}.png`;
-        bossImage.style.filter = "grayscale(100%) brightness(50%)";
-        bossImage.style.opacity = "0.3";
-        bossImage.style.cursor = "default";
-        bossImage.parentElement.onclick = null; // Désactiver le clic
-
-        bossHpBar.style.width = '0%';
-        bossHpText.innerText = "--- / ---";
-        if (bossReward && bossReward.parentElement) {
-            bossReward.parentElement.style.display = 'none';
-        }
-
-        return;
-    }
-
-    // Si boss actif
-    bossContainer.classList.remove('boss-inactive');
-    if (bossReward && bossReward.parentElement) {
-        bossReward.parentElement.style.display = 'block';
-    }
-
-    bossImage.src = `images/${charName}.png`;
-    bossImage.style.filter = "none";
-    bossImage.style.opacity = "1";
-    bossImage.style.cursor = "pointer";
-    bossImage.parentElement.onclick = hitBoss; // Réactiver le clic
-
     const timeLeft = Math.max(0, bossData.despawnTime - now);
 
     // Format Timer HH:MM:SS
@@ -3075,17 +3015,26 @@ function updateBossUI() {
 
     const timerStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-    bossTimer.innerText = timerStr;
-    bossTimer.style.color = "#ff3333";
-    bossLevelText.innerText = `${frenchName.toUpperCase()} (NIV. ${bossData.level})`;
+    document.getElementById('bossTimer').innerText = timerStr;
+    document.getElementById('bossLevelText').innerText = `BOSS NIV. ${bossData.level}`;
+
+    // Mise à jour de l'image du Boss
+    const img = document.getElementById('bossImage');
+    const charName = bossData.bossCharacter || 'bowser';
+    const charData = allCharacters.find(c => c.name === charName);
+    if (charData) {
+        img.src = charData.img;
+    } else {
+        img.src = `images/${charName}.png`;
+    }
 
     const hpPercent = (bossData.currentHp / bossData.maxHp) * 100;
-    bossHpBar.style.width = hpPercent + '%';
-    bossHpText.innerText = `${Math.ceil(bossData.currentHp)} / ${Math.ceil(bossData.maxHp)}`;
+    document.getElementById('bossHpBar').style.width = hpPercent + '%';
+    document.getElementById('bossHpText').innerText = `${Math.ceil(bossData.currentHp)} / ${Math.ceil(bossData.maxHp)}`;
 
     // Récompense = 2.5 * MaxHP
     const reward = Math.floor(bossData.maxHp * 2.5);
-    bossReward.innerText = reward.toLocaleString();
+    document.getElementById('bossReward').innerText = reward.toLocaleString();
 }
 
 function hitBoss() {
@@ -3123,9 +3072,7 @@ function hitBoss() {
 
         saveEconomy();
         updateWalletDisplay();
-
-        // Mise à jour de l'interface pour afficher le timer
-        updateBossUI();
+        document.getElementById('bossContainer').style.display = 'none';
 
         playSound(document.getElementById('sfxBowser')); // Ou son de victoire spécifique
     }

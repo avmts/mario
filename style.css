@@ -2182,21 +2182,7 @@ input[type="color"],
     100% { transform: translate(0, 0); }
 }
 
-/* --- BOSS INACTIVE STATE --- */
-#bossContainer.boss-inactive {
-    border-color: #777 !important;
-    background: rgba(0,0,0,0.6) !important;
-}
-
-#bossContainer.boss-inactive #bossLevelText {
-    color: #aaa !important;
-}
-
-#bossContainer.boss-inactive .boss-img-container img {
-    /* Style géré par JS, mais on peut ajouter ici si besoin */
-    transition: filter 0.5s ease;
-}
-
-#bossContainer.boss-inactive .boss-hp-container {
-    opacity: 0.3;
+#bossCooldownContainer {
+    font-size: 0.9rem;
+    animation: pulse 2s infinite;
 }
