@@ -60,7 +60,32 @@
                 <button class="btn-level btn-album" style="width: 48%; margin: 15px 0;" onclick="openAlbumMenu()">📒 ALBUM</button>
             </div>
 
+            <button class="btn-level btn-stats" onclick="openStatsMenu()" style="background-color: #9C27B0; border-color: #BA68C8;">📊 STATS</button>
+
             <button class="btn-level btn-reset" onclick="resetBestScores()">🗑️ EFFACER SCORES</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="statsMenu">
+        <div class="menu-box" style="max-width: 600px;">
+            <h2 style="margin-top:0; color:#9C27B0;">STATISTIQUES</h2>
+
+            <div class="stats-grid" style="text-align: left; font-size: 1.1rem;">
+                <div class="stat-item" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    <strong>🕒 Temps de jeu total :</strong> <span id="statTotalTime">0h 00m</span>
+                </div>
+                <div class="stat-item" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    <strong>🔄 Cartes retournées :</strong> <span id="statTotalFlips">0</span>
+                </div>
+                <div class="stat-item" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    <strong>⚠️ Piège le plus fréquent :</strong> <span id="statTopTrap" style="color: #E52521;">Aucun</span>
+                </div>
+                <div class="stat-item" style="margin-bottom: 15px;">
+                    <strong>❤️ Personnage favori :</strong> <span id="statFavChar" style="color: #44D62C;">Aucun</span>
+                </div>
+            </div>
+
+            <button class="btn-menu" style="margin-top: 20px;" onclick="goToMainMenu()">RETOUR</button>
         </div>
     </div>
 
@@ -75,6 +100,8 @@
                 <img src="images/coin.png" alt="Pièce">
                 <span id="clickerWallet">0</span>
             </div>
+            <div id="totalCpmDisplay">0 pièces / min</div>
+            <div id="totalCpsDisplay">0 pièces / sec</div>
 
             <div class="clicker-area" style="margin: 30px 0; text-align: center;">
                 <div id="clickerBlockContainer" style="display: inline-block; position: relative;">
@@ -92,11 +119,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #A52A2A;">Goomba</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Petits pas (<span id="goombaRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="goombaLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="goombaLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyGoomba" onclick="buyGoomba()" style="min-width: 100px;">
-                        <span id="goombaCost">50</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="goombaCost">5 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
                 <div class="upgrade-item" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
@@ -105,11 +132,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #44D62C;">Yoshi</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Clique pour toi (<span id="yoshiRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="yoshiLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="yoshiLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyYoshi" onclick="buyYoshi()" style="min-width: 100px;">
-                        <span id="yoshiCost">300</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="yoshiCost">30 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -119,11 +146,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #ff69b4;">Peach</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Aide royale (<span id="peachRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="peachLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="peachLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyPeach" onclick="buyPeach()" style="min-width: 100px;">
-                        <span id="peachCost">1000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="peachCost">100 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -133,11 +160,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #E52521;">Toad</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Service rapide (<span id="toadRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="toadLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="toadLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyToad" onclick="buyToad()" style="min-width: 100px;">
-                        <span id="toadCost">3500</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="toadCost">350 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -147,11 +174,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #44D62C;">Luigi</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Super saut (<span id="luigiRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="luigiLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="luigiLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyLuigi" onclick="buyLuigi()" style="min-width: 100px;">
-                        <span id="luigiCost">10000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="luigiCost">1 000 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -161,11 +188,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #FBD000;">Wario</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Cupidité (<span id="warioRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="warioLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="warioLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyWario" onclick="buyWario()" style="min-width: 100px;">
-                        <span id="warioCost">15000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="warioCost">1 500 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -175,11 +202,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #E52521;">Bowser</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Force brute (<span id="bowserRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="bowserLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="bowserLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyBowser" onclick="buyBowser()" style="min-width: 100px;">
-                        <span id="bowserCost">50000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="bowserCost">5 000 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
 
@@ -189,11 +216,11 @@
                         <div>
                             <div style="font-weight: bold; font-size: 1.2rem; color: #00ffff;">Harmonie</div>
                             <div style="font-size: 0.9rem; color: #ddd;">Magie stellaire (<span id="harmonyRateDisplay">0</span>/min)</div>
-                            <div style="font-size: 0.8rem; color: #aaa;">Niveau : <span id="harmonyLevel">0</span></div>
+                            <div class="level-text">Niveau : <span id="harmonyLevel">0</span></div>
                         </div>
                     </div>
                     <button class="btn-buy" id="btnBuyHarmony" onclick="buyHarmony()" style="min-width: 100px;">
-                        <span id="harmonyCost">250000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
+                        <span id="harmonyCost">25 000 000</span> <img src="images/coin.png" style="width: 15px; vertical-align: middle;">
                     </button>
                 </div>
             </div>
@@ -216,68 +243,18 @@
             </div>
 
             <div class="shop-grid">
-                <div class="shop-item">
-                    <div class="item-icon"><img src="images/1up.png"></div>
-                    <div class="item-info">
-                        <h3>Champi Vie</h3>
-                        <p>+1 Vie en pleine partie.</p>
-                        <div class="price">1500 <img src="images/coin.png"></div>
-                    </div>
-                    <div class="item-action">
-                        <span class="stock" id="stock-mushroom">x0</span>
-                        <button class="btn-buy" onclick="buyItem('mushroom', 1500)">ACHETER</button>
-                    </div>
-                </div>
+                <!-- Ordre croissant des prix : 50k, 80k, 100k, 120k, 150k, 300k -->
 
                 <div class="shop-item">
                     <div class="item-icon"><span style="font-size:3rem">⏰</span></div>
                     <div class="item-info">
                         <h3>Chrono +</h3>
                         <p>Ajoute +15 secondes.</p>
-                        <div class="price">500 <img src="images/coin.png"></div>
+                        <div class="price">50 000 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-clock">x0</span>
-                        <button class="btn-buy" onclick="buyItem('clock', 500)">ACHETER</button>
-                    </div>
-                </div>
-
-                <div class="shop-item">
-                    <div class="item-icon"><img src="images/star.png"></div>
-                    <div class="item-info">
-                        <h3>Super Étoile</h3>
-                        <p>Révèle tout pendant 3s.</p>
-                        <div class="price">3000 <img src="images/coin.png"></div>
-                    </div>
-                    <div class="item-action">
-                        <span class="stock" id="stock-star">x0</span>
-                        <button class="btn-buy" onclick="buyItem('star', 3000)">ACHETER</button>
-                    </div>
-                </div>
-
-                <div class="shop-item">
-                    <div class="item-icon"><img src="images/fireflower.png"></div>
-                    <div class="item-info">
-                        <h3>Fleur de Feu</h3>
-                        <p>Trouve une paire auto.</p>
-                        <div class="price">1200 <img src="images/coin.png"></div>
-                    </div>
-                    <div class="item-action">
-                        <span class="stock" id="stock-fireflower">x0</span>
-                        <button class="btn-buy" onclick="buyItem('fireflower', 1200)">ACHETER</button>
-                    </div>
-                </div>
-
-                <div class="shop-item">
-                    <div class="item-icon"><img src="images/iceflower.png"></div>
-                    <div class="item-info">
-                        <h3>Fleur de Glace</h3>
-                        <p>Gèle le temps (10s).</p>
-                        <div class="price">1000 <img src="images/coin.png"></div>
-                    </div>
-                    <div class="item-action">
-                        <span class="stock" id="stock-iceflower">x0</span>
-                        <button class="btn-buy" onclick="buyItem('iceflower', 1000)">ACHETER</button>
+                        <button class="btn-buy" onclick="buyItem('clock', 50000)">ACHETER</button>
                     </div>
                 </div>
 
@@ -286,11 +263,63 @@
                     <div class="item-info">
                         <h3 style="color:#b8860b">Bloc Surprise</h3>
                         <p>Utilise un objet au hasard !</p>
-                        <div class="price">800 <img src="images/coin.png"></div>
+                        <div class="price">80 000 <img src="images/coin.png"></div>
                     </div>
                     <div class="item-action">
                         <span class="stock" id="stock-mysteryblock" style="background:#b8860b;">x0</span>
-                        <button class="btn-buy" style="background:#FBD000; color:#b85c00;" onclick="buyItem('mysteryblock', 800)">ACHETER</button>
+                        <button class="btn-buy" style="background:#FBD000; color:#b85c00;" onclick="buyItem('mysteryblock', 80000)">ACHETER</button>
+                    </div>
+                </div>
+
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/iceflower.png"></div>
+                    <div class="item-info">
+                        <h3>Fleur de Glace</h3>
+                        <p>Gèle le temps (10s).</p>
+                        <div class="price">100 000 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-iceflower">x0</span>
+                        <button class="btn-buy" onclick="buyItem('iceflower', 100000)">ACHETER</button>
+                    </div>
+                </div>
+
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/fireflower.png"></div>
+                    <div class="item-info">
+                        <h3>Fleur de Feu</h3>
+                        <p>Trouve une paire auto.</p>
+                        <div class="price">120 000 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-fireflower">x0</span>
+                        <button class="btn-buy" onclick="buyItem('fireflower', 120000)">ACHETER</button>
+                    </div>
+                </div>
+
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/1up.png"></div>
+                    <div class="item-info">
+                        <h3>Champi Vie</h3>
+                        <p>+1 Vie en pleine partie.</p>
+                        <div class="price">150 000 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-mushroom">x0</span>
+                        <button class="btn-buy" onclick="buyItem('mushroom', 150000)">ACHETER</button>
+                    </div>
+                </div>
+
+                <div class="shop-item">
+                    <div class="item-icon"><img src="images/star.png"></div>
+                    <div class="item-info">
+                        <h3>Super Étoile</h3>
+                        <p>Révèle tout pendant 3s.</p>
+                        <div class="price">300 000 <img src="images/coin.png"></div>
+                    </div>
+                    <div class="item-action">
+                        <span class="stock" id="stock-star">x0</span>
+                        <button class="btn-buy" onclick="buyItem('star', 300000)">ACHETER</button>
                     </div>
                 </div>
             </div>
