@@ -260,6 +260,18 @@ let clickerData = JSON.parse(localStorage.getItem('mario_clicker_data')) || {
     coinBuffer: 0
 };
 
+// --- STATISTIQUES GLOBALES ---
+let globalStats = JSON.parse(localStorage.getItem('mario_global_stats')) || {
+    totalTimePlayed: 0, // secondes
+    totalFlips: 0,
+    trapsTriggered: {},
+    charactersSelected: {}
+};
+
+function saveGlobalStats() {
+    localStorage.setItem('mario_global_stats', JSON.stringify(globalStats));
+}
+
 // Migration et Initialisation des coûts pour s'adapter à la nouvelle formule exponentielle (x1.2)
 // On s'assure que toutes les clés existent
 if (typeof clickerData.goombaCount === 'undefined') clickerData.goombaCount = 0;
@@ -612,6 +624,9 @@ function goToMainMenu() {
     skinMenu.classList.remove('active');
     albumMenu.classList.remove('active');
     shopMenu.classList.remove('active');
+
+    const statsMenu = document.getElementById('statsMenu');
+    if (statsMenu) statsMenu.classList.remove('active');
 
     if (bgMenu) bgMenu.classList.remove('active');
     if (musicMenu) musicMenu.classList.remove('active');
@@ -1713,6 +1728,16 @@ function randomSelection() {
 
 function confirmSelection() {
     if (selectedCharsForGame.length !== targetPairCount) return;
+
+    // Tracking persos favoris
+    selectedCharsForGame.forEach(char => {
+        if (!globalStats.charactersSelected[char.name]) {
+            globalStats.charactersSelected[char.name] = 0;
+        }
+        globalStats.charactersSelected[char.name]++;
+    });
+    saveGlobalStats();
+
     selectionMenu.classList.remove('active');
     startCountdown();
 }
@@ -1890,6 +1915,12 @@ function launchGameLogic() {
 function updateTimer() {
     if (isPaused || isBowserActive || isTimerFrozen) return;
     timeLeft--;
+
+    // Tracking temps de jeu
+    globalStats.totalTimePlayed++;
+    // Sauvegarde périodique (toutes les 10s pour éviter trop d'IO) ou à la fin
+    if (timeLeft % 10 === 0) saveGlobalStats();
+
     checkDangerState();
     timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
     if (timeLeft <= 10) {
@@ -1907,6 +1938,11 @@ function flipCard() {
     if (this.classList.contains('chained-shake')) return;
     if (lockBoard || isPaused) return;
     if (this === firstCard) return;
+
+    // Tracking flips
+    globalStats.totalFlips++;
+    saveGlobalStats();
+
     playSound(document.getElementById('sfxFlip'));
     this.style.transform = '';
     this.classList.remove('tilting');
@@ -1936,6 +1972,8 @@ function disableCards() {
     firstCard.removeEventListener('click', flipCard);
     secondCard.removeEventListener('click', flipCard);
     if (firstCard.dataset.name === 'bobomb') {
+        // Tracking piège
+        trackTrap('bobomb');
         lockBoard = true;
         playSound(sfxExplosion);
         firstCard.classList.add('bomb-explode');
@@ -2080,6 +2118,7 @@ function triggerStarEffect() {
 }
 
 function triggerBowserEffect() {
+    trackTrap('bowser');
     isBowserActive = true;
     lockBoard = true;
     bgMusic.pause();
@@ -2186,6 +2225,7 @@ function resetBoard() {
 function gameOver(title, text) {
     isGameOver = true;
     clearInterval(timerInterval);
+    saveGlobalStats(); // Sauvegarde finale des stats temps
     bgMusic.pause();
     bgMusic.currentTime = 0;
     bgMusic.playbackRate = 1.0;
@@ -2214,6 +2254,7 @@ function gameOver(title, text) {
 function handleVictory() {
     isGameOver = true;
     clearInterval(timerInterval);
+    saveGlobalStats(); // Sauvegarde finale des stats temps
     bgMusic.pause();
     bgMusic.currentTime = 0;
     bgMusic.playbackRate = 1.0;
@@ -2356,6 +2397,7 @@ function triggerFireFlowerEffect() {
 }
 
 function triggerGhostEffect() {
+    trackTrap('ghost');
     const board = document.getElementById('gameBoard');
     ghostMode = 1;
     board.classList.add('ghost-blur');
@@ -2368,6 +2410,7 @@ function triggerGhostEffect() {
 }
 
 function triggerBlooperEffect() {
+    trackTrap('blooper');
     blooperMode = 1;
     playSound(document.getElementById('sfxSplat'));
     for (let i = 0; i < 20; i++) {
@@ -2388,6 +2431,7 @@ function triggerBlooperEffect() {
 }
 
 function triggerKamekEffect() {
+    trackTrap('kamek');
     let swapCount = 2;
     if (currentLevelKey === 'easy') swapCount = 2;
     else if (currentLevelKey === 'medium') swapCount = 3;
@@ -2473,6 +2517,7 @@ function checkDangerState() {
 }
 
 function triggerIceEffect() {
+    trackTrap('iceflower');
     let freezeDuration = 0;
     if (currentLevelKey === 'easy') freezeDuration = 3000;
     else if (currentLevelKey === 'medium') freezeDuration = 5000;
@@ -2518,6 +2563,7 @@ function trigger1UpEffect() {
 }
 
 function triggerChompEffect() {
+    trackTrap('chainchomp');
     let chainsCount = 0;
     let p = 0;
     if (currentLevelKey === 'easy') p = 6;
@@ -2560,6 +2606,7 @@ function triggerChompEffect() {
 }
 
 function triggerThunderEffect() {
+    trackTrap('lightning');
     let duration = 5000;
     if (currentLevelKey === 'medium') duration = 8000;
     else if (currentLevelKey === 'hard') duration = 12000;
@@ -2588,6 +2635,7 @@ function triggerThunderEffect() {
 }
 
 function triggerPoisonEffect() {
+    trackTrap('poison');
     isPoisonActive = true;
     document.body.classList.add('rotate-screen');
     document.body.classList.add('poison-fog');
@@ -2606,6 +2654,7 @@ function triggerPoisonEffect() {
 }
 
 function triggerShyGuyEffect() {
+    trackTrap('shyguy');
     clearShyGuyEffect();
     isShyGuyActive = true;
     document.body.classList.add('shyguy-mode');
@@ -2706,6 +2755,7 @@ function showOfflinePopup(amount) {
 }
 
 function triggerCherryEffect() {
+    trackTrap('cherry');
     isCherryActive = true;
     spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "DOUBLE CURSEUR ! 🍒", "#ff69b4");
     showStatusIcon('cherry', 15000, 'images/cherry.png');
@@ -2808,4 +2858,59 @@ function triggerCherryEffect() {
     setTimeout(() => {
         clearCherryEffect();
     }, 15000);
+}
+
+// --- FONCTIONS STATS ---
+function trackTrap(trapName) {
+    if (!globalStats.trapsTriggered[trapName]) {
+        globalStats.trapsTriggered[trapName] = 0;
+    }
+    globalStats.trapsTriggered[trapName]++;
+    saveGlobalStats();
+}
+
+function openStatsMenu() {
+    startMenu.classList.remove('active');
+    document.getElementById('statsMenu').classList.add('active');
+
+    // 1. Temps total
+    const totalSeconds = globalStats.totalTimePlayed;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    document.getElementById('statTotalTime').innerText = `${hours}h ${minutes}m`;
+
+    // 2. Cartes retournées
+    document.getElementById('statTotalFlips').innerText = globalStats.totalFlips;
+
+    // 3. Piège fréquent
+    let maxTrap = "Aucun";
+    let maxTrapCount = 0;
+    for (const [trap, count] of Object.entries(globalStats.trapsTriggered)) {
+        if (count > maxTrapCount) {
+            maxTrapCount = count;
+            maxTrap = trap;
+        }
+    }
+    if (maxTrap !== "Aucun") {
+        const trapName = frenchNames[maxTrap] || maxTrap;
+        document.getElementById('statTopTrap').innerText = `${trapName} (${maxTrapCount} fois)`;
+    } else {
+        document.getElementById('statTopTrap').innerText = "Aucun";
+    }
+
+    // 4. Perso favori
+    let maxChar = "Aucun";
+    let maxCharCount = 0;
+    for (const [char, count] of Object.entries(globalStats.charactersSelected)) {
+        if (count > maxCharCount) {
+            maxCharCount = count;
+            maxChar = char;
+        }
+    }
+    if (maxChar !== "Aucun") {
+        const charName = frenchNames[maxChar] || maxChar;
+        document.getElementById('statFavChar').innerText = `${charName} (${maxCharCount} fois)`;
+    } else {
+        document.getElementById('statFavChar').innerText = "Aucun";
+    }
 }

@@ -60,7 +60,32 @@
                 <button class="btn-level btn-album" style="width: 48%; margin: 15px 0;" onclick="openAlbumMenu()">📒 ALBUM</button>
             </div>
 
+            <button class="btn-level btn-stats" onclick="openStatsMenu()" style="background-color: #9C27B0; border-color: #BA68C8;">📊 STATS</button>
+
             <button class="btn-level btn-reset" onclick="resetBestScores()">🗑️ EFFACER SCORES</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="statsMenu">
+        <div class="menu-box" style="max-width: 600px;">
+            <h2 style="margin-top:0; color:#9C27B0;">STATISTIQUES</h2>
+
+            <div class="stats-grid" style="text-align: left; font-size: 1.1rem;">
+                <div class="stat-item" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    <strong>🕒 Temps de jeu total :</strong> <span id="statTotalTime">0h 00m</span>
+                </div>
+                <div class="stat-item" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    <strong>🔄 Cartes retournées :</strong> <span id="statTotalFlips">0</span>
+                </div>
+                <div class="stat-item" style="margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    <strong>⚠️ Piège le plus fréquent :</strong> <span id="statTopTrap" style="color: #E52521;">Aucun</span>
+                </div>
+                <div class="stat-item" style="margin-bottom: 15px;">
+                    <strong>❤️ Personnage favori :</strong> <span id="statFavChar" style="color: #44D62C;">Aucun</span>
+                </div>
+            </div>
+
+            <button class="btn-menu" style="margin-top: 20px;" onclick="goToMainMenu()">RETOUR</button>
         </div>
     </div>
 
