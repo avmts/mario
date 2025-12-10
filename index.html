@@ -44,6 +44,10 @@
                 <img src="images/toadshop.png" style="height: 28px; vertical-align: middle; margin-right: 5px; margin-bottom: 4px;"> TOAD SHOP
             </button>
 
+            <button class="btn-level btn-warp" onclick="openWarpZoneMenu()" style="background: linear-gradient(to bottom, #4CAF50, #2E7D32); border-color: #1B5E20;">
+                <img src="images/pipe.png" style="height: 28px; vertical-align: middle; margin-right: 5px; margin-bottom: 4px;"> WARP ZONE
+            </button>
+
             <button class="btn-level" onclick="openClickerMenu()" style="background: linear-gradient(to bottom, #FF9800, #F57C00); border-color: #EF6C00;">
                 <img src="images/block.png" style="height: 28px; vertical-align: middle; margin-right: 5px; margin-bottom: 4px;"> MARIO CLICKER
             </button>
@@ -82,6 +86,79 @@
                 </div>
                 <div class="stat-item" style="margin-bottom: 15px;">
                     <strong>❤️ Personnage favori :</strong> <span id="statFavChar" style="color: #44D62C;">Aucun</span>
+                </div>
+            </div>
+
+            <button class="btn-menu" style="margin-top: 20px;" onclick="goToMainMenu()">RETOUR</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="warpZoneMenu">
+        <div class="menu-box" style="max-width: 900px;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:15px;">
+                <img src="images/pipe.png" style="height:80px;">
+                <h2 style="margin:0; color:#4CAF50; font-size: 2.5rem; text-shadow: 2px 2px 0 #000;">WARP ZONE</h2>
+            </div>
+            <p style="margin-bottom: 20px;">Envoie des Toads en expédition pour rapporter des trésors !</p>
+
+            <div class="wallet-display large">
+                <img src="images/coin.png" alt="Pièce">
+                <span id="warpWallet">0</span>
+            </div>
+
+            <div class="warp-grid">
+                <!-- TUYAU VERT -->
+                <div class="warp-item" id="warp-green">
+                    <div class="pipe-header" style="color:#4CAF50;">PROMENADE</div>
+                    <div class="pipe-visual">
+                         <img src="images/pipe.png" class="pipe-img">
+                         <div class="toad-anim-container" id="anim-green"></div>
+                         <div class="warp-timer" id="timer-green">PRÊT</div>
+                    </div>
+                    <div class="warp-info">
+                        <p>⏱️ 15 min</p>
+                        <p>💰 4500 - 5600</p>
+                        <p>🎁 30% Objet</p>
+                    </div>
+                    <button class="btn-buy" id="btn-green" onclick="startExpedition('green')">
+                        4500 <img src="images/coin.png" style="width:12px;">
+                    </button>
+                </div>
+
+                <!-- TUYAU JAUNE -->
+                <div class="warp-item" id="warp-yellow">
+                    <div class="pipe-header" style="color:#FBD000;">AVENTURE</div>
+                    <div class="pipe-visual">
+                         <img src="images/pipey.png" class="pipe-img">
+                         <div class="toad-anim-container" id="anim-yellow"></div>
+                         <div class="warp-timer" id="timer-yellow">PRÊT</div>
+                    </div>
+                    <div class="warp-info">
+                        <p>⏱️ 2 Heures</p>
+                        <p>💰 10500 - 15600</p>
+                        <p>🎁 50% Objet</p>
+                    </div>
+                    <button class="btn-buy" id="btn-yellow" onclick="startExpedition('yellow')">
+                        10500 <img src="images/coin.png" style="width:12px;">
+                    </button>
+                </div>
+
+                <!-- TUYAU ROUGE -->
+                <div class="warp-item" id="warp-red">
+                    <div class="pipe-header" style="color:#E52521;">DONJON</div>
+                    <div class="pipe-visual">
+                         <img src="images/piper.png" class="pipe-img">
+                         <div class="toad-anim-container" id="anim-red"></div>
+                         <div class="warp-timer" id="timer-red">PRÊT</div>
+                    </div>
+                    <div class="warp-info">
+                        <p>⏱️ 8 Heures</p>
+                        <p>💰 20000 - 39000</p>
+                        <p>🎁 100% Objet</p>
+                    </div>
+                    <button class="btn-buy" id="btn-red" onclick="startExpedition('red')">
+                        20000 <img src="images/coin.png" style="width:12px;">
+                    </button>
                 </div>
             </div>
 

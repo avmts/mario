@@ -276,6 +276,13 @@ if (bossData.nextSpawnTime === 0) {
     bossData.nextSpawnTime = Date.now(); // Premier spawn immédiat
 }
 
+// --- DONNÉES WARP ZONE ---
+let warpZoneData = JSON.parse(localStorage.getItem('mario_warp_zone')) || {
+    green: { active: false, endTime: 0 },
+    yellow: { active: false, endTime: 0 },
+    red: { active: false, endTime: 0 }
+};
+
 const BOSS_CHARACTERS = ['bowser', 'ghost', 'blooper', 'kamek', 'bobomb', 'iceflower', 'chainchomp', 'lightning', 'poison', 'shyguy', 'cherry'];
 
 // --- STATISTIQUES GLOBALES ---
@@ -348,6 +355,9 @@ function saveEconomy() {
 
     // Sauvegarde du Boss
     localStorage.setItem('mario_boss_data', JSON.stringify(bossData));
+
+    // Sauvegarde Warp Zone
+    localStorage.setItem('mario_warp_zone', JSON.stringify(warpZoneData));
 }
 
 // --- DESCRIPTIONS DES POUVOIRS ---
@@ -1106,6 +1116,11 @@ function buyHarmony() {
 function clickerLoop() {
     // Vérification du Boss à chaque tick (1s)
     checkBossStatus();
+
+    // Mise à jour UI Warp Zone si actif
+    if (document.getElementById('warpZoneMenu') && document.getElementById('warpZoneMenu').classList.contains('active')) {
+        updateWarpZoneUI();
+    }
 
     const getRate = (count, base) => {
         if (count <= 0) return 0;
@@ -3083,4 +3098,204 @@ function spawnConfetti() {
     if (typeof launchConfetti === 'function') {
         launchConfetti();
     }
+}
+
+// --- FONCTIONS WARP ZONE ---
+function openWarpZoneMenu() {
+    startMenu.classList.remove('active');
+    document.getElementById('warpZoneMenu').classList.add('active');
+    updateWarpZoneUI();
+}
+
+function updateWarpZoneUI() {
+    updateWalletDisplay();
+    const now = Date.now();
+
+    const configs = {
+        green: { id: 'green', btnId: 'btn-green', timerId: 'timer-green', divId: 'warp-green' },
+        yellow: { id: 'yellow', btnId: 'btn-yellow', timerId: 'timer-yellow', divId: 'warp-yellow' },
+        red: { id: 'red', btnId: 'btn-red', timerId: 'timer-red', divId: 'warp-red' }
+    };
+
+    for (const type in configs) {
+        const conf = configs[type];
+        const data = warpZoneData[type];
+        const btn = document.getElementById(conf.btnId);
+        const timer = document.getElementById(conf.timerId);
+        const div = document.getElementById(conf.divId);
+
+        if (!btn || !div) continue;
+
+        if (data.active) {
+            const remaining = data.endTime - now;
+            div.classList.add('active-mission');
+
+            if (remaining > 0) {
+                // EN COURS
+                div.classList.remove('ready-mission');
+                div.classList.remove('pipe-ready'); // Stop animation
+
+                // Format Time
+                const h = Math.floor(remaining / 3600000);
+                const m = Math.floor((remaining % 3600000) / 60000);
+                const s = Math.floor((remaining % 60000) / 1000);
+                timer.innerText = `${h}h ${m}m ${s}s`;
+
+                btn.disabled = true;
+                btn.innerText = "EN COURS...";
+                btn.onclick = null;
+            } else {
+                // TERMINÉ
+                div.classList.add('ready-mission');
+                div.classList.add('pipe-ready'); // Animation saut
+
+                timer.innerText = "TERMINÉ !";
+
+                btn.disabled = false;
+                btn.innerText = "RÉCUPÉRER";
+                btn.onclick = () => claimExpedition(type);
+
+                // On rend aussi le tuyau cliquable pour une meilleure UX
+                div.onclick = (e) => {
+                     // On évite le double clic si on clique sur le bouton
+                     if(e.target !== btn) claimExpedition(type);
+                };
+            }
+        } else {
+            // INACTIF
+            div.classList.remove('active-mission');
+            div.classList.remove('ready-mission');
+            div.classList.remove('pipe-ready');
+            div.onclick = null;
+
+            timer.innerText = "PRÊT";
+            btn.disabled = false;
+
+            let cost = 0;
+            if (type === 'green') cost = 4500;
+            if (type === 'yellow') cost = 10500;
+            if (type === 'red') cost = 20000;
+
+            btn.innerHTML = `${cost} <img src="images/coin.png" style="width:12px;">`;
+            btn.onclick = () => startExpedition(type);
+        }
+    }
+}
+
+function startExpedition(type) {
+    let cost = 0;
+    let duration = 0;
+    let toadImg = "";
+
+    if (type === 'green') { cost = 4500; duration = 15 * 60 * 1000; toadImg = "images/toaddigger1.png"; }
+    else if (type === 'yellow') { cost = 10500; duration = 2 * 60 * 60 * 1000; toadImg = "images/toaddigger2.png"; }
+    else if (type === 'red') { cost = 20000; duration = 8 * 60 * 60 * 1000; toadImg = "images/toaddigger3.png"; }
+
+    if (totalCoins >= cost) {
+        totalCoins -= cost;
+
+        warpZoneData[type].active = true;
+        warpZoneData[type].endTime = Date.now() + duration;
+
+        saveEconomy();
+        updateWarpZoneUI();
+        playSound(sfxCoin);
+
+        // Animation Toad
+        const animContainer = document.getElementById(`anim-${type}`);
+        if (animContainer) {
+            animContainer.innerHTML = `<img src="${toadImg}" class="toad-jump-anim">`;
+            setTimeout(() => { animContainer.innerHTML = ''; }, 2000);
+        }
+
+    } else {
+        playSound(document.getElementById('sfxBowser'));
+        const wallet = document.getElementById('warpWallet');
+        wallet.classList.add('shake');
+        setTimeout(() => wallet.classList.remove('shake'), 500);
+    }
+}
+
+function claimExpedition(type) {
+    if (!warpZoneData[type].active) return;
+
+    // Stop propagation event si clic sur div
+    const div = document.getElementById(`warp-${type}`);
+    div.classList.remove('pipe-ready');
+    void div.offsetWidth;
+
+    let minCoins = 0;
+    let maxCoins = 0;
+    let rewards = [];
+
+    // Logique de récompense
+    if (type === 'green') {
+        minCoins = 4500; maxCoins = 5600;
+        // 30% 1-Up
+        if (Math.random() < 0.30) rewards.push('mushroom');
+        // 5% Autre
+        if (Math.random() < 0.05) rewards.push(getRandomItem());
+    } else if (type === 'yellow') {
+        minCoins = 10500; maxCoins = 15600;
+        // 50% Clock
+        if (Math.random() < 0.50) rewards.push('clock');
+        // 20% Fireflower
+        if (Math.random() < 0.20) rewards.push('fireflower');
+        // 5% Autre
+        if (Math.random() < 0.05) rewards.push(getRandomItem());
+    } else if (type === 'red') {
+        minCoins = 20000; maxCoins = 39000;
+        // Garanti Block
+        rewards.push('mysteryblock');
+        // 40% Star
+        if (Math.random() < 0.40) rewards.push('star');
+        // 10% 1-Up
+        if (Math.random() < 0.10) rewards.push('mushroom');
+        // 5% Autre
+        if (Math.random() < 0.05) rewards.push(getRandomItem());
+    }
+
+    // Calcul pièces
+    const coinsWon = Math.floor(Math.random() * (maxCoins - minCoins + 1)) + minCoins;
+    totalCoins += coinsWon;
+
+    // Ajout items
+    let itemText = "";
+    rewards.forEach(item => {
+        inventory[item]++;
+        itemText += `\n+ 1 ${getItemName(item)}`;
+    });
+
+    // Reset Mission
+    warpZoneData[type].active = false;
+    warpZoneData[type].endTime = 0;
+
+    saveEconomy();
+    updateWarpZoneUI();
+
+    playSound(sfxWin);
+    spawnFloatingText(window.innerWidth/2, window.innerHeight/2, `+${coinsWon} PIÈCES !`, "#FFD700");
+    if (rewards.length > 0) {
+        setTimeout(() => {
+            spawnFloatingText(window.innerWidth/2, window.innerHeight/2 + 50, itemText.replace(/\n/g, ' '), "#44D62C");
+        }, 500);
+    }
+    spawnConfetti();
+}
+
+function getRandomItem() {
+    const items = ['mushroom', 'clock', 'star', 'fireflower', 'iceflower', 'mysteryblock'];
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+function getItemName(code) {
+    const map = {
+        'mushroom': "Champi Vie",
+        'clock': "Chrono +",
+        'star': "Super Étoile",
+        'fireflower': "Fleur de Feu",
+        'iceflower': "Fleur de Glace",
+        'mysteryblock': "Bloc Surprise"
+    };
+    return map[code] || "Objet";
 }
