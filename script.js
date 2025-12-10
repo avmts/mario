@@ -340,10 +340,12 @@ function updateWalletDisplay() {
     const menuWallet = document.getElementById('menuWallet');
     const shopWallet = document.getElementById('shopWallet');
     const clickerWallet = document.getElementById('clickerWallet');
+    const warpWallet = document.getElementById('warpWallet');
 
     if (menuWallet) menuWallet.innerText = Math.floor(totalCoins);
     if (shopWallet) shopWallet.innerText = Math.floor(totalCoins);
     if (clickerWallet) clickerWallet.innerText = Math.floor(totalCoins);
+    if (warpWallet) warpWallet.innerText = Math.floor(totalCoins);
 }
 
 function saveEconomy() {
