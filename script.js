@@ -154,6 +154,7 @@ const countdownOverlay = document.getElementById('countdownOverlay');
 const countdownText = document.getElementById('countdownText');
 const shopMenu = document.getElementById('shopMenu');
 const clickerMenu = document.getElementById('clickerMenu');
+const warpZoneMenu = document.getElementById('warpZoneMenu');
 
 // MENU FOND D'ECRAN
 const bgMenu = document.getElementById('bgMenu');
@@ -662,6 +663,7 @@ function goToMainMenu() {
     if (bgMenu) bgMenu.classList.remove('active');
     if (musicMenu) musicMenu.classList.remove('active');
     if (clickerMenu) clickerMenu.classList.remove('active');
+    if (warpZoneMenu) warpZoneMenu.classList.remove('active');
 
     // ARRET DE LA MUSIQUE
     bgMusic.pause();
@@ -697,6 +699,7 @@ function togglePause() {
         skinMenu.classList.contains('active') ||
         shopMenu.classList.contains('active') ||
         (clickerMenu && clickerMenu.classList.contains('active')) ||
+        (warpZoneMenu && warpZoneMenu.classList.contains('active')) ||
         (bgMenu && bgMenu.classList.contains('active')) ||
         (musicMenu && musicMenu.classList.contains('active')) ||
         albumMenu.classList.contains('active') ||
