@@ -3279,10 +3279,11 @@ function claimExpedition(type) {
     updateWarpZoneUI();
 
     playSound(sfxWin);
-    spawnFloatingText(window.innerWidth/2, window.innerHeight/2, `+${coinsWon} PIÈCES !`, "#FFD700");
+    // Affichage plus long (4s) pour avoir le temps de lire
+    spawnFloatingText(window.innerWidth/2, window.innerHeight/2, `+${coinsWon} PIÈCES !`, "#FFD700", 4000);
     if (rewards.length > 0) {
         setTimeout(() => {
-            spawnFloatingText(window.innerWidth/2, window.innerHeight/2 + 50, itemText.replace(/\n/g, ' '), "#44D62C");
+            spawnFloatingText(window.innerWidth/2, window.innerHeight/2 + 50, itemText.replace(/\n/g, ' '), "#44D62C", 4000);
         }, 500);
     }
     spawnConfetti();

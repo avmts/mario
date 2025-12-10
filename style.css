@@ -2332,3 +2332,9 @@ input[type="color"],
         opacity: 1;
     }
 }
+
+/* CURSEUR FIX WARP ZONE */
+.pipe-ready .pipe-img,
+.warp-item.ready-mission {
+    cursor: url('curseur/pointer.cur'), pointer !important;
+}
