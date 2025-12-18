@@ -1226,6 +1226,21 @@ function updateShopUI() {
     document.getElementById('stock-fireflower').innerText = "En poche: " + (inventory.fireflower || 0);
     document.getElementById('stock-iceflower').innerText = "En poche: " + (inventory.iceflower || 0);
     document.getElementById('stock-mysteryblock').innerText = "En poche: " + (inventory.mysteryblock || 0);
+
+    // Griser les boutons si pas assez d'argent
+    const buyButtons = document.querySelectorAll('#shopMenu .btn-buy');
+    buyButtons.forEach(btn => {
+        const price = parseInt(btn.getAttribute('data-price'));
+        if (price) {
+            if (totalCoins >= price) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+            }
+        }
+    });
 }
 
 function buyItem(itemType, price) {
@@ -2011,6 +2026,22 @@ function checkForMatch() {
         }
         disableCards();
     } else {
+        // --- EFFET KAMEK (Pénalité si non-match) ---
+        if (firstCard.dataset.name === 'kamek' || secondCard.dataset.name === 'kamek') {
+            timeLeft = Math.max(0, timeLeft - 5);
+            timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
+            checkDangerState();
+
+            playSound(document.getElementById('sfxKamek'));
+            spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, "-5 SECONDES !", "#ff3333");
+
+            // Check Game Over immédiat
+            if (timeLeft <= 0) {
+                setTimeout(() => gameOver("TIME UP !", "Kamek t'a volé ton temps !"), 500);
+                return;
+            }
+        }
+        // ---------------------------------------------
         unflipCards();
     }
 }
@@ -3112,6 +3143,11 @@ function openWarpZoneMenu() {
     updateWarpZoneUI();
 }
 
+    // Mise à jour UI Shop si actif (pour griser les boutons en temps réel)
+    if (document.getElementById('shopMenu') && document.getElementById('shopMenu').classList.contains('active')) {
+        updateShopUI();
+    }
+
 function updateWarpZoneUI() {
     updateWalletDisplay();
     const now = Date.now();
@@ -3174,7 +3210,6 @@ function updateWarpZoneUI() {
             div.onclick = null;
 
             timer.innerText = "PRÊT";
-            btn.disabled = false;
 
             let cost = 0;
             if (type === 'green') cost = 4500;
@@ -3183,6 +3218,15 @@ function updateWarpZoneUI() {
 
             btn.innerHTML = `${cost} <img src="images/coin.png" style="width:12px;">`;
             btn.onclick = () => startExpedition(type);
+
+            // Griser le bouton si pas assez d'argent
+            if (totalCoins >= cost) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+            }
         }
     }
 }
