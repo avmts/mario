@@ -3351,11 +3351,13 @@ function getItemName(code) {
     return map[code] || "Objet";
 }
 
-// --- EFFET NEIGE (LET IT SNOW) ---
+// --- EFFET NEIGE (LET IT SNOW) - OPTIMISATION CANVAS ---
 let isSnowing = false;
 let snowInterval = null;
 let snowflakes = [];
 const SNOW_COUNT = 150;
+let canvas = null;
+let ctx = null;
 
 function toggleSnow() {
     isSnowing = !isSnowing;
@@ -3383,11 +3385,31 @@ function toggleSnow() {
     playSound(document.getElementById('sfxFlip'));
 }
 
+function initSnowCanvas() {
+    canvas = document.getElementById('snowCanvas');
+    if (!canvas) return false;
+    ctx = canvas.getContext('2d');
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    return true;
+}
+
+function resizeCanvas() {
+    if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+}
+
 function startSnow() {
+    if (!initSnowCanvas()) return;
+
+    canvas.classList.add('active');
+
     if (snowflakes.length === 0) {
-        // Création des flocons
+        // Création des données des flocons
         for (let i = 0; i < SNOW_COUNT; i++) {
-            createSnowflake(true); // true = random Y start
+            createSnowflakeData(true); // true = random Y start
         }
     }
 
@@ -3397,73 +3419,85 @@ function startSnow() {
 }
 
 function stopSnow() {
-    cancelAnimationFrame(snowInterval);
-    snowInterval = null;
-    snowflakes.forEach(f => f.element.remove());
+    if (snowInterval) {
+        cancelAnimationFrame(snowInterval);
+        snowInterval = null;
+    }
+    if (canvas) {
+        canvas.classList.remove('active');
+        // On nettoie le canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    // On garde les données en mémoire si on réactive, ou on peut les vider
     snowflakes = [];
 }
 
-function createSnowflake(randomY = false) {
-    const el = document.createElement('div');
-    el.classList.add('snowflake');
-
-    // Taille aléatoire
-    const size = Math.random() * 4 + 2; // Entre 2 et 6px
-    el.style.width = size + 'px';
-    el.style.height = size + 'px';
-    el.style.opacity = Math.random() * 0.6 + 0.4; // 0.4 à 1.0
-
-    // Position initiale
-    const x = Math.random() * window.innerWidth;
-    const y = randomY ? Math.random() * window.innerHeight : -10;
-
-    document.body.appendChild(el);
-
+function createSnowflakeData(randomY = false) {
     const flake = {
-        element: el,
-        x: x,
-        y: y,
-        speed: Math.random() * 1.5 + 0.5, // Vitesse chute
-        oscSpeed: Math.random() * 0.05 + 0.02, // Vitesse oscillation
-        oscAmp: Math.random() * 20 + 5, // Amplitude oscillation (pixels)
-        offset: Math.random() * 100 // Décalage phase
+        x: Math.random() * window.innerWidth,
+        y: randomY ? Math.random() * window.innerHeight : -10,
+        radius: Math.random() * 2 + 1, // Rayon entre 1 et 3
+        speed: Math.random() * 1.5 + 0.5,
+        oscSpeed: Math.random() * 0.05 + 0.02,
+        offset: Math.random() * 100,
+        opacity: Math.random() * 0.6 + 0.4
     };
-
     snowflakes.push(flake);
 }
 
 function snowLoop() {
-    if (!isSnowing) return;
+    if (!isSnowing || !ctx || !canvas) return;
 
-    snowflakes.forEach((flake, index) => {
+    // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+
+    snowflakes.forEach((flake) => {
         // Mise à jour physique
         flake.y += flake.speed;
 
-        // Oscillation horizontale
-        // x = base_x + sin(time) * amplitude
-        // On calcule le x actuel basé sur le temps ou la position y
-        // Une approche simple est de modifier x directement, mais ça dérive.
-        // Mieux : x actuel = x_initial + offset_oscillation.
-        // Mais ici on veut que ça tombe, donc on a besoin de garder la trace de "x central".
-        // Simplification : on ajoute juste un petit déplacement à x
-
-        const oscillation = Math.sin(flake.y * 0.02 + flake.offset) * 0.5;
-        // 0.02 lie la fréquence à la position verticale
-
-        flake.x += oscillation;
+        // Oscillation
+        flake.x += Math.sin(flake.y * 0.02 + flake.offset) * 0.5;
 
         // Reset si en bas
-        if (flake.y > window.innerHeight) {
+        if (flake.y > canvas.height) {
             flake.y = -10;
-            flake.x = Math.random() * window.innerWidth;
+            flake.x = Math.random() * canvas.width;
         }
 
-        // Wrap horizontal si ça sort trop
-        if (flake.x > window.innerWidth + 20) flake.x = -20;
-        if (flake.x < -20) flake.x = window.innerWidth + 20;
+        // Wrap horizontal
+        if (flake.x > canvas.width + 20) flake.x = -20;
+        if (flake.x < -20) flake.x = canvas.width + 20;
 
-        // Rendu
-        flake.element.style.transform = `translate(${flake.x}px, ${flake.y}px)`;
+        // Dessiner le flocon (on dessine tout en blanc pour optimiser le batch)
+        // Si on veut l'opacité variable, on doit faire des paths séparés ou changer le globalAlpha
+        // Pour perf max : tout dessiner avec même style, ou grouper par opacité ?
+        // Ici, on va faire simple : moveTo + arc dans un seul path -> pas d'opacité individuelle facile sans changer le style
+        // Si on veut l'opacité individuelle :
+        // ctx.globalAlpha = flake.opacity;
+        // ctx.beginPath(); ctx.arc(...); ctx.fill();
+        // C'est un peu plus lourd mais ça reste beaucoup plus rapide que le DOM.
+
+        // On va garder l'opacité individuelle pour le joli effet
+        // Mais pour optimiser, on peut ignorer l'opacité ou la faire moins varier.
+        // Utilisons moveTo pour dessiner des cercles.
+
+        // OPTIMISATION : Dessiner des rects est plus rapide que des arcs, mais arcs c'est joli.
+        // On va faire des petits cercles.
+
+        // Pour éviter de changer le context state trop souvent, on peut juste utiliser une opacité moyenne ou faire sans.
+        // Essayons avec opacité individuelle :
+    });
+
+    // Batch drawing par transparence (optionnel) ou boucle simple.
+    // Boucle simple :
+    snowflakes.forEach(flake => {
+        ctx.globalAlpha = flake.opacity;
+        ctx.beginPath();
+        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+        ctx.fill();
     });
 
     snowInterval = requestAnimationFrame(snowLoop);
@@ -3474,9 +3508,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedSnow = localStorage.getItem('mario_snow_active');
     if (savedSnow === 'true') {
         isSnowing = true;
-        // On met à jour l'UI plus tard car le bouton n'est peut-être pas encore créé ou accessible facilement ici
-        // Mais on lance la neige
-        startSnow();
+        // Initialisation différée pour s'assurer que le canvas est prêt et dimensionné
+        setTimeout(startSnow, 100);
     }
 });
 
