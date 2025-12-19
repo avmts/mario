@@ -1651,6 +1651,7 @@ function openBgMenu() {
     startMenu.classList.remove('active');
     if (bgMenu) bgMenu.classList.add('active');
     applyCurrentThemeColors();
+    updateSnowButtonUI();
 }
 
 if (bgColorInput) {
@@ -3348,4 +3349,151 @@ function getItemName(code) {
         'mysteryblock': "Bloc Surprise"
     };
     return map[code] || "Objet";
+}
+
+// --- EFFET NEIGE (LET IT SNOW) ---
+let isSnowing = false;
+let snowInterval = null;
+let snowflakes = [];
+const SNOW_COUNT = 150;
+
+function toggleSnow() {
+    isSnowing = !isSnowing;
+    const btn = document.getElementById('btnSnow');
+
+    if (isSnowing) {
+        if (btn) {
+            btn.innerText = "❄️ ARRÊTER LA NEIGE";
+            btn.style.background = "#fff";
+            btn.style.color = "#333";
+            btn.style.borderColor = "#ccc";
+        }
+        startSnow();
+        localStorage.setItem('mario_snow_active', 'true');
+    } else {
+        if (btn) {
+            btn.innerText = "❄️ LET IT SNOW";
+            btn.style.background = "#049CD8"; // Bleu clair
+            btn.style.color = "#fff";
+            btn.style.borderColor = "#fff";
+        }
+        stopSnow();
+        localStorage.setItem('mario_snow_active', 'false');
+    }
+    playSound(document.getElementById('sfxFlip'));
+}
+
+function startSnow() {
+    if (snowflakes.length === 0) {
+        // Création des flocons
+        for (let i = 0; i < SNOW_COUNT; i++) {
+            createSnowflake(true); // true = random Y start
+        }
+    }
+
+    if (!snowInterval) {
+        snowLoop();
+    }
+}
+
+function stopSnow() {
+    cancelAnimationFrame(snowInterval);
+    snowInterval = null;
+    snowflakes.forEach(f => f.element.remove());
+    snowflakes = [];
+}
+
+function createSnowflake(randomY = false) {
+    const el = document.createElement('div');
+    el.classList.add('snowflake');
+
+    // Taille aléatoire
+    const size = Math.random() * 4 + 2; // Entre 2 et 6px
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.opacity = Math.random() * 0.6 + 0.4; // 0.4 à 1.0
+
+    // Position initiale
+    const x = Math.random() * window.innerWidth;
+    const y = randomY ? Math.random() * window.innerHeight : -10;
+
+    document.body.appendChild(el);
+
+    const flake = {
+        element: el,
+        x: x,
+        y: y,
+        speed: Math.random() * 1.5 + 0.5, // Vitesse chute
+        oscSpeed: Math.random() * 0.05 + 0.02, // Vitesse oscillation
+        oscAmp: Math.random() * 20 + 5, // Amplitude oscillation (pixels)
+        offset: Math.random() * 100 // Décalage phase
+    };
+
+    snowflakes.push(flake);
+}
+
+function snowLoop() {
+    if (!isSnowing) return;
+
+    snowflakes.forEach((flake, index) => {
+        // Mise à jour physique
+        flake.y += flake.speed;
+
+        // Oscillation horizontale
+        // x = base_x + sin(time) * amplitude
+        // On calcule le x actuel basé sur le temps ou la position y
+        // Une approche simple est de modifier x directement, mais ça dérive.
+        // Mieux : x actuel = x_initial + offset_oscillation.
+        // Mais ici on veut que ça tombe, donc on a besoin de garder la trace de "x central".
+        // Simplification : on ajoute juste un petit déplacement à x
+
+        const oscillation = Math.sin(flake.y * 0.02 + flake.offset) * 0.5;
+        // 0.02 lie la fréquence à la position verticale
+
+        flake.x += oscillation;
+
+        // Reset si en bas
+        if (flake.y > window.innerHeight) {
+            flake.y = -10;
+            flake.x = Math.random() * window.innerWidth;
+        }
+
+        // Wrap horizontal si ça sort trop
+        if (flake.x > window.innerWidth + 20) flake.x = -20;
+        if (flake.x < -20) flake.x = window.innerWidth + 20;
+
+        // Rendu
+        flake.element.style.transform = `translate(${flake.x}px, ${flake.y}px)`;
+    });
+
+    snowInterval = requestAnimationFrame(snowLoop);
+}
+
+// Restauration état au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    const savedSnow = localStorage.getItem('mario_snow_active');
+    if (savedSnow === 'true') {
+        isSnowing = true;
+        // On met à jour l'UI plus tard car le bouton n'est peut-être pas encore créé ou accessible facilement ici
+        // Mais on lance la neige
+        startSnow();
+    }
+});
+
+// Update UI button on menu open if needed
+function updateSnowButtonUI() {
+    const btn = document.getElementById('btnSnow');
+    if (!btn) return;
+
+    if (isSnowing) {
+        btn.innerText = "❄️ ARRÊTER LA NEIGE";
+        btn.style.background = "#fff";
+        btn.style.color = "#333";
+        btn.style.borderColor = "#ccc";
+    } else {
+        btn.innerText = "❄️ LET IT SNOW";
+        btn.style.background = "#049CD8";
+        btn.style.color = "#fff";
+        btn.style.borderColor = "#fff";
+    }
 }

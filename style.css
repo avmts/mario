@@ -2338,3 +2338,13 @@ input[type="color"],
 .warp-item.ready-mission {
     cursor: url('curseur/pointer.cur'), pointer !important;
 }
+
+/* --- EFFET NEIGE (LET IT SNOW) --- */
+.snowflake {
+    position: fixed;
+    background-color: white;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9000;
+    filter: drop-shadow(0 0 2px rgba(255,255,255,0.8));
+}
