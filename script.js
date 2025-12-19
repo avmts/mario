@@ -3355,7 +3355,7 @@ function getItemName(code) {
 let isSnowing = false;
 let snowInterval = null;
 let snowflakes = [];
-const SNOW_COUNT = 150;
+const SNOW_COUNT = 800;
 let canvas = null;
 let ctx = null;
 
