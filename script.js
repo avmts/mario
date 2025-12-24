@@ -9,9 +9,20 @@ const firebaseConfig = {
 };
 
 // Initialisation de Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+let auth = null;
+let db = null;
+
+try {
+    if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+    } else {
+        console.error("Firebase SDK non chargé.");
+    }
+} catch (e) {
+    console.error("Erreur initialisation Firebase:", e);
+}
 
 // LISTE COMPLETE DES PERSONNAGES
 const characterNames = [
@@ -1461,6 +1472,10 @@ function toggleAuthMenu() {
 }
 
 function registerUser() {
+    if (!auth) {
+        alert("Erreur: Service d'authentification non disponible.");
+        return;
+    }
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
     const errorDiv = document.getElementById('authError');
@@ -1492,6 +1507,10 @@ function registerUser() {
 }
 
 function loginUser() {
+    if (!auth) {
+        alert("Erreur: Service d'authentification non disponible.");
+        return;
+    }
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
     const errorDiv = document.getElementById('authError');
@@ -1523,6 +1542,7 @@ function loginUser() {
 }
 
 function logoutUser() {
+    if (!auth) return;
     auth.signOut().then(() => {
         spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "DÉCONNEXION...", "#ccc");
         // Optional: Reset local data or keep it?
@@ -1533,36 +1553,49 @@ function logoutUser() {
 }
 
 // Observer l'état de connexion
-auth.onAuthStateChanged((user) => {
+if (auth) {
+    auth.onAuthStateChanged((user) => {
+        const btnAuth = document.getElementById('btnAuth');
+        const statusDisplay = document.getElementById('authStatusDisplay');
+
+        if (user) {
+            // User is signed in
+            if(btnAuth) {
+                btnAuth.innerText = "DÉCONNEXION";
+                btnAuth.onclick = logoutUser;
+                btnAuth.style.background = "#e74c3c";
+                btnAuth.style.borderColor = "#c0392b";
+            }
+            if(statusDisplay) {
+                statusDisplay.innerText = `Connecté en tant que : ${user.email}`;
+                statusDisplay.style.color = "#2ecc71";
+            }
+        } else {
+            // User is signed out
+            if(btnAuth) {
+                btnAuth.innerText = "CONNEXION";
+                btnAuth.onclick = toggleAuthMenu;
+                btnAuth.style.background = "#3498db";
+                btnAuth.style.borderColor = "#2980b9";
+            }
+            if(statusDisplay) {
+                statusDisplay.innerText = "Non connecté";
+                statusDisplay.style.color = "#555";
+            }
+        }
+    });
+} else {
+    // Si auth n'est pas dispo, on cache le bouton ou on indique une erreur
     const btnAuth = document.getElementById('btnAuth');
     const statusDisplay = document.getElementById('authStatusDisplay');
-
-    if (user) {
-        // User is signed in
-        if(btnAuth) {
-            btnAuth.innerText = "DÉCONNEXION";
-            btnAuth.onclick = logoutUser;
-            btnAuth.style.background = "#e74c3c";
-            btnAuth.style.borderColor = "#c0392b";
-        }
-        if(statusDisplay) {
-            statusDisplay.innerText = `Connecté en tant que : ${user.email}`;
-            statusDisplay.style.color = "#2ecc71";
-        }
-    } else {
-        // User is signed out
-        if(btnAuth) {
-            btnAuth.innerText = "CONNEXION";
-            btnAuth.onclick = toggleAuthMenu;
-            btnAuth.style.background = "#3498db";
-            btnAuth.style.borderColor = "#2980b9";
-        }
-        if(statusDisplay) {
-            statusDisplay.innerText = "Non connecté";
-            statusDisplay.style.color = "#555";
-        }
+    if (statusDisplay) {
+        statusDisplay.innerText = "Mode hors ligne (Auth indisponible)";
+        statusDisplay.style.color = "#888";
     }
-});
+    if (btnAuth) {
+        btnAuth.style.display = 'none';
+    }
+}
 
 function openSkinMenu() {
     startMenu.classList.remove('active');
