@@ -2354,3 +2354,20 @@ input[type="color"],
 #snowCanvas.active {
     display: block;
 }
+
+/* --- AUTH INPUTS --- */
+.auth-input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px #3498db;
+}
