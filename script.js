@@ -3530,3 +3530,85 @@ function updateSnowButtonUI() {
         btn.style.borderColor = "#fff";
     }
 }
+
+/* --- SYSTÈME DE SAUVEGARDE / CHARGEMENT --- */
+
+function openSaveMenu() {
+    // Fermer les autres menus
+    document.querySelectorAll('.overlay').forEach(el => el.classList.remove('active'));
+    document.getElementById('saveMenu').classList.add('active');
+
+    // Générer la sauvegarde
+    const saveData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('mario_')) {
+            saveData[key] = localStorage.getItem(key);
+        }
+    }
+
+    // Encoder en Base64 (compatible UTF-8)
+    try {
+        const jsonString = JSON.stringify(saveData);
+        const encoded = btoa(unescape(encodeURIComponent(jsonString)));
+        document.getElementById('exportArea').value = encoded;
+    } catch (e) {
+        console.error("Erreur d'encodage de la sauvegarde", e);
+        document.getElementById('exportArea').value = "Erreur lors de la génération du code.";
+    }
+
+    // Vider la zone d'import
+    document.getElementById('importArea').value = "";
+}
+
+function copySaveCode() {
+    const exportArea = document.getElementById('exportArea');
+    exportArea.select();
+    document.execCommand('copy');
+
+    const btn = document.querySelector('#saveMenu button[onclick="copySaveCode()"]');
+    const originalText = btn.innerText;
+    btn.innerText = "✅ COPIÉ !";
+    setTimeout(() => {
+        btn.innerText = originalText;
+    }, 2000);
+}
+
+function importSaveCode() {
+    const code = document.getElementById('importArea').value.trim();
+    if (!code) return;
+
+    if (!confirm("Attention : Cela va écraser toute ta progression actuelle. Es-tu sûr ?")) {
+        return;
+    }
+
+    try {
+        // Décoder
+        const jsonString = decodeURIComponent(escape(atob(code)));
+        const data = JSON.parse(jsonString);
+
+        // Nettoyer les données existantes
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('mario_')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+
+        // Restaurer les données
+        Object.keys(data).forEach(key => {
+            if (key.startsWith('mario_')) {
+                localStorage.setItem(key, data[key]);
+            }
+        });
+
+        alert("Sauvegarde chargée avec succès ! La page va se recharger.");
+        location.reload();
+
+    } catch (e) {
+        alert("Erreur : Le code de sauvegarde est invalide ou corrompu.");
+        console.error(e);
+    }
+}

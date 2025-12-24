@@ -68,6 +68,9 @@
 
             <button class="btn-level btn-stats" onclick="openStatsMenu()" style="background-color: #9C27B0; border-color: #BA68C8;">📊 STATS</button>
 
+
+            <button class="btn-level btn-save" onclick="openSaveMenu()">💾 SAUVEGARDE</button>
+
             <button class="btn-level btn-reset" onclick="resetBestScores()">🗑️ EFFACER SCORES</button>
         </div>
     </div>
@@ -730,6 +733,23 @@
         <button class="btn-level" onclick="goToMainMenu()">Menu Principal</button>
     </div>
 
-    <script src="script.js"></script>
+
+    <div class="overlay" id="saveMenu">
+        <div class="menu-box" style="max-width: 700px;">
+            <h2 style="margin-top:0; color:#607D8B;">SAUVEGARDE & CHARGEMENT</h2>
+            <p>Copie ce code pour garder ta progression, ou colle un code pour charger une partie.</p>
+
+            <h3 style="color:#ddd; border-bottom:1px solid #555; padding-bottom:5px;">📤 EXPORTER (Ta sauvegarde actuelle)</h3>
+            <textarea id="exportArea" class="save-textarea" readonly onclick="this.select()"></textarea>
+            <button class="btn-menu" style="width:auto; padding: 5px 20px; font-size: 0.9rem;" onclick="copySaveCode()">📋 COPIER LE CODE</button>
+
+            <h3 style="color:#ddd; border-bottom:1px solid #555; padding-bottom:5px; margin-top:20px;">📥 IMPORTER (Écrase ta partie actuelle !)</h3>
+            <textarea id="importArea" class="save-textarea" placeholder="Colle ton code de sauvegarde ici..."></textarea>
+            <button class="btn-menu" style="width:auto; padding: 5px 20px; font-size: 0.9rem; background:#E52521; border-color:#ff4d4d;" onclick="importSaveCode()">⚠️ CHARGER & ÉCRASER</button>
+
+            <button class="btn-menu" style="margin-top: 30px;" onclick="goToMainMenu()">RETOUR</button>
+        </div>
+    </div>
+<script src="script.js"></script>
 </body>
 </html>
