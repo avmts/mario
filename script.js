@@ -1155,6 +1155,11 @@ function clickerLoop() {
         updateWarpZoneUI();
     }
 
+    // Mise à jour UI Shop si actif (pour griser les boutons en temps réel)
+    if (document.getElementById('shopMenu') && document.getElementById('shopMenu').classList.contains('active')) {
+        updateShopUI();
+    }
+
     const getRate = (count, base) => {
         if (count <= 0) return 0;
         return count * base;
@@ -1560,6 +1565,112 @@ function logoutUser() {
     });
 }
 
+// --- CLOUD SAVE & LOAD ---
+async function saveToCloud() {
+    if (!auth || !auth.currentUser) return;
+
+    // Collecter les données à sauvegarder
+    const data = {
+        lastSave: firebase.firestore.FieldValue.serverTimestamp(),
+        totalCoins: Math.floor(totalCoins),
+        inventory: inventory,
+        clickerData: clickerData,
+        bossData: bossData,
+        warpZoneData: warpZoneData,
+        globalStats: globalStats,
+        unlockedCharacters: unlockedCharacters,
+        currentSkin: currentSkin,
+        // Sauvegarde des wins et scores via localStorage car stockés par clés individuelles
+        wins: {
+            easy: parseInt(localStorage.getItem('mario_wins_easy') || 0),
+            medium: parseInt(localStorage.getItem('mario_wins_medium') || 0),
+            hard: parseInt(localStorage.getItem('mario_wins_hard') || 0)
+        },
+        bestScores: {}
+    };
+
+    // Rassembler tous les meilleurs scores
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('mario_best_')) {
+            data.bestScores[key] = parseInt(localStorage.getItem(key) || 0);
+        }
+    });
+
+    try {
+        await db.collection('users').doc(auth.currentUser.uid).set(data, { merge: true });
+        console.log("☁️ Sauvegarde Cloud réussie.");
+    } catch (e) {
+        console.error("❌ Erreur sauvegarde Cloud:", e);
+    }
+}
+
+async function loadFromCloud() {
+    if (!auth || !auth.currentUser) return;
+
+    try {
+        const doc = await db.collection('users').doc(auth.currentUser.uid).get();
+        if (doc.exists) {
+            const data = doc.data();
+
+            // Restauration des variables
+            if (data.totalCoins !== undefined) totalCoins = data.totalCoins;
+            if (data.inventory) inventory = data.inventory;
+            if (data.clickerData) clickerData = data.clickerData;
+            if (data.bossData) bossData = data.bossData;
+            if (data.warpZoneData) warpZoneData = data.warpZoneData;
+            if (data.globalStats) globalStats = data.globalStats;
+            if (data.unlockedCharacters) unlockedCharacters = data.unlockedCharacters;
+            if (data.currentSkin) currentSkin = data.currentSkin;
+
+            // Restauration des Wins
+            if (data.wins) {
+                localStorage.setItem('mario_wins_easy', data.wins.easy || 0);
+                localStorage.setItem('mario_wins_medium', data.wins.medium || 0);
+                localStorage.setItem('mario_wins_hard', data.wins.hard || 0);
+            }
+
+            // Restauration des Scores
+            if (data.bestScores) {
+                for (const [key, val] of Object.entries(data.bestScores)) {
+                    localStorage.setItem(key, val);
+                }
+            }
+
+            // Mise à jour locale et UI
+            saveEconomy(); // Met à jour localStorage
+            saveGlobalStats();
+            localStorage.setItem('mario_album', JSON.stringify(unlockedCharacters));
+            localStorage.setItem('mario_skin', currentSkin);
+
+            updateWalletDisplay();
+            updateSkinLocks();
+
+            // Update affichage Best Score si nécessaire
+            if (typeof currentLevelKey !== 'undefined') {
+                const savedBest = localStorage.getItem(`mario_best_${currentLevelKey}`);
+                const bestDisplay = document.getElementById('bestScore');
+                if (bestDisplay) bestDisplay.innerText = savedBest ? savedBest : 0;
+            }
+
+            console.log("☁️ Chargement Cloud réussi.");
+            spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "CLOUD SYNC OK !", "#00ffff");
+        } else {
+            console.log("☁️ Aucune donnée Cloud. Création...");
+            saveToCloud();
+        }
+    } catch (e) {
+        console.error("❌ Erreur chargement Cloud:", e);
+    }
+}
+
+// Auto-Save Loop (30 secondes)
+setInterval(() => {
+    // Sauvegarde locale de sécurité
+    saveEconomy();
+    // Sauvegarde Cloud si connecté
+    saveToCloud();
+}, 30000);
+
 // Observer l'état de connexion
 if (auth) {
     auth.onAuthStateChanged((user) => {
@@ -1567,6 +1678,9 @@ if (auth) {
         const statusDisplay = document.getElementById('authStatusDisplay');
 
         if (user) {
+            // Chargement des données Cloud à la connexion
+            loadFromCloud();
+
             // User is signed in
             if(btnAuth) {
                 btnAuth.innerText = "DÉCONNEXION";
@@ -3320,11 +3434,6 @@ function openWarpZoneMenu() {
     document.getElementById('warpZoneMenu').classList.add('active');
     updateWarpZoneUI();
 }
-
-    // Mise à jour UI Shop si actif (pour griser les boutons en temps réel)
-    if (document.getElementById('shopMenu') && document.getElementById('shopMenu').classList.contains('active')) {
-        updateShopUI();
-    }
 
 function updateWarpZoneUI() {
     updateWalletDisplay();
