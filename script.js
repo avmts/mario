@@ -1,3 +1,18 @@
+// --- CONFIGURATION FIREBASE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyBlDcK-EZ20_BRK3CoSuZdtzaa_i47Uj-4",
+  authDomain: "mario-memory.firebaseapp.com",
+  projectId: "mario-memory",
+  storageBucket: "mario-memory.firebasestorage.app",
+  messagingSenderId: "534517742256",
+  appId: "1:534517742256:web:7a6336725a66872f681975"
+};
+
+// Initialisation de Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 // LISTE COMPLETE DES PERSONNAGES
 const characterNames = [
     'mario', 'luigi', 'peach', 'bowser', 'yoshi',
@@ -1428,6 +1443,126 @@ function openCustomMenu() {
     startMenu.classList.remove('active');
     customMenu.classList.add('active');
 }
+
+// --- FONCTIONS AUTHENTIFICATION ---
+function toggleAuthMenu() {
+    const authMenu = document.getElementById('authMenu');
+    if (authMenu.classList.contains('active')) {
+        authMenu.classList.remove('active');
+        // Clear inputs and errors
+        document.getElementById('authEmail').value = '';
+        document.getElementById('authPassword').value = '';
+        document.getElementById('authError').style.display = 'none';
+        startMenu.classList.add('active');
+    } else {
+        startMenu.classList.remove('active');
+        authMenu.classList.add('active');
+    }
+}
+
+function registerUser() {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    const errorDiv = document.getElementById('authError');
+
+    if(!email || !password) {
+        errorDiv.innerText = "Veuillez remplir tous les champs.";
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Signed in
+            toggleAuthMenu();
+            spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "INSCRIPTION RÉUSSIE !", "#2ecc71");
+            playSound(sfxWin);
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            let errorMessage = error.message;
+            if (errorCode === 'auth/email-already-in-use') errorMessage = "Email déjà utilisé.";
+            if (errorCode === 'auth/invalid-email') errorMessage = "Email invalide.";
+            if (errorCode === 'auth/weak-password') errorMessage = "Mot de passe trop faible.";
+
+            errorDiv.innerText = errorMessage;
+            errorDiv.style.display = 'block';
+            playSound(sfxBowser);
+        });
+}
+
+function loginUser() {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    const errorDiv = document.getElementById('authError');
+
+    if(!email || !password) {
+        errorDiv.innerText = "Veuillez remplir tous les champs.";
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Signed in
+            toggleAuthMenu();
+            spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "CONNEXION RÉUSSIE !", "#2ecc71");
+            playSound(sfx1up);
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            let errorMessage = error.message;
+            if (errorCode === 'auth/user-not-found') errorMessage = "Utilisateur inconnu.";
+            if (errorCode === 'auth/wrong-password') errorMessage = "Mot de passe incorrect.";
+            if (errorCode === 'auth/invalid-email') errorMessage = "Email invalide.";
+
+            errorDiv.innerText = errorMessage;
+            errorDiv.style.display = 'block';
+            playSound(sfxBowser);
+        });
+}
+
+function logoutUser() {
+    auth.signOut().then(() => {
+        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "DÉCONNEXION...", "#ccc");
+        // Optional: Reset local data or keep it?
+        // For now, we keep local data to avoid data loss if sync isn't implemented.
+    }).catch((error) => {
+        console.error(error);
+    });
+}
+
+// Observer l'état de connexion
+auth.onAuthStateChanged((user) => {
+    const btnAuth = document.getElementById('btnAuth');
+    const statusDisplay = document.getElementById('authStatusDisplay');
+
+    if (user) {
+        // User is signed in
+        if(btnAuth) {
+            btnAuth.innerText = "DÉCONNEXION";
+            btnAuth.onclick = logoutUser;
+            btnAuth.style.background = "#e74c3c";
+            btnAuth.style.borderColor = "#c0392b";
+        }
+        if(statusDisplay) {
+            statusDisplay.innerText = `Connecté en tant que : ${user.email}`;
+            statusDisplay.style.color = "#2ecc71";
+        }
+    } else {
+        // User is signed out
+        if(btnAuth) {
+            btnAuth.innerText = "CONNEXION";
+            btnAuth.onclick = toggleAuthMenu;
+            btnAuth.style.background = "#3498db";
+            btnAuth.style.borderColor = "#2980b9";
+        }
+        if(statusDisplay) {
+            statusDisplay.innerText = "Non connecté";
+            statusDisplay.style.color = "#555";
+        }
+    }
+});
 
 function openSkinMenu() {
     startMenu.classList.remove('active');

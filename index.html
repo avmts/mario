@@ -38,6 +38,15 @@
                 <span id="menuWallet">0</span>
             </div>
 
+            <!-- Auth Status Display -->
+            <div id="authStatusDisplay" style="margin-bottom: 10px; font-size: 0.9rem; color: #555; font-style: italic;">
+                Non connecté
+            </div>
+
+            <button id="btnAuth" class="btn-level" onclick="toggleAuthMenu()" style="background: #3498db; border-color: #2980b9;">
+                CONNEXION
+            </button>
+
             <button class="btn-level" onclick="openSelectionMenu('easy')">FACILE (5 Vies)</button>
             <button class="btn-level" onclick="openSelectionMenu('medium')">MOYEN (10 Vies)</button>
             <button class="btn-level" onclick="openSelectionMenu('hard')">DIFFICILE (15 Vies)</button>
@@ -92,6 +101,25 @@
             </div>
 
             <button class="btn-menu" style="margin-top: 20px;" onclick="goToMainMenu()">RETOUR</button>
+        </div>
+    </div>
+
+    <!-- AUTH OVERLAY -->
+    <div class="overlay" id="authMenu">
+        <div class="menu-box" style="max-width: 400px;">
+            <h2 style="margin-top:0; color:#3498db;">CONNEXION</h2>
+
+            <div id="authError" style="color: #E52521; margin-bottom: 15px; display: none; font-weight: bold;">
+                Erreur
+            </div>
+
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input">
+            <input type="password" id="authPassword" placeholder="Mot de passe" class="auth-input">
+
+            <button class="btn-menu" onclick="loginUser()" style="background: #2ecc71; border-color: #27ae60;">SE CONNECTER</button>
+            <button class="btn-menu" onclick="registerUser()" style="background: #9b59b6; border-color: #8e44ad;">S'INSCRIRE</button>
+
+            <button class="btn-menu" style="background: #95a5a6; border-color: #7f8c8d; margin-top: 20px;" onclick="toggleAuthMenu()">ANNULER</button>
         </div>
     </div>
 
@@ -729,6 +757,12 @@
         <button class="btn-level" onclick="restartCurrentLevel()">Réessayer</button>
         <button class="btn-level" onclick="goToMainMenu()">Menu Principal</button>
     </div>
+
+    <!-- FIREBASE SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- On inclut Firestore au cas où pour le futur -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script src="script.js"></script>
 </body>
