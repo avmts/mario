@@ -253,6 +253,8 @@ let cherryInterval = null;
 const CHERRY_OFFSET_X = 125;
 const CHERRY_OFFSET_Y = 50;
 
+let hasUnsavedChanges = false; // Flag pour sauvegarde
+
 // --- GESTION DE L'ÉCONOMIE & INVENTAIRE ---
 let totalCoins = parseInt(localStorage.getItem('mario_total_coins')) || 0;
 let sessionCoins = 0; // Nouvelle variable temporaire pour la partie en cours
@@ -1194,6 +1196,12 @@ function clickerLoop() {
             }
             saveEconomy();
         }
+    }
+
+    // Sauvegarde périodique si changements non sauvegardés (ex: dégâts Boss)
+    if (hasUnsavedChanges) {
+        saveEconomy();
+        hasUnsavedChanges = false;
     }
 }
 
@@ -3268,6 +3276,7 @@ function hitBoss() {
 
     // Dégâts (1 clic = 1 dégât pour l'instant)
     bossData.currentHp -= 1;
+    hasUnsavedChanges = true; // Marquer pour sauvegarde
 
     // Mise à jour visuelle immédiate
     updateBossUI();
