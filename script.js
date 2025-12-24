@@ -1,29 +1,3 @@
-// --- CONFIGURATION FIREBASE ---
-const firebaseConfig = {
-  apiKey: "AIzaSyBlDcK-EZ20_BRK3CoSuZdtzaa_i47Uj-4",
-  authDomain: "mario-memory.firebaseapp.com",
-  projectId: "mario-memory",
-  storageBucket: "mario-memory.firebasestorage.app",
-  messagingSenderId: "534517742256",
-  appId: "1:534517742256:web:7a6336725a66872f681975"
-};
-
-// Initialisation de Firebase
-let auth = null;
-let db = null;
-
-try {
-    if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-    } else {
-        console.error("Firebase SDK non chargé.");
-    }
-} catch (e) {
-    console.error("Erreur initialisation Firebase:", e);
-}
-
 // LISTE COMPLETE DES PERSONNAGES
 const characterNames = [
     'mario', 'luigi', 'peach', 'bowser', 'yoshi',
@@ -252,8 +226,6 @@ let magicClickHandler = null;
 let cherryInterval = null;
 const CHERRY_OFFSET_X = 125;
 const CHERRY_OFFSET_Y = 50;
-
-let hasUnsavedChanges = false; // Flag pour sauvegarde
 
 // --- GESTION DE L'ÉCONOMIE & INVENTAIRE ---
 let totalCoins = parseInt(localStorage.getItem('mario_total_coins')) || 0;
@@ -1155,11 +1127,6 @@ function clickerLoop() {
         updateWarpZoneUI();
     }
 
-    // Mise à jour UI Shop si actif (pour griser les boutons en temps réel)
-    if (document.getElementById('shopMenu') && document.getElementById('shopMenu').classList.contains('active')) {
-        updateShopUI();
-    }
-
     const getRate = (count, base) => {
         if (count <= 0) return 0;
         return count * base;
@@ -1201,12 +1168,6 @@ function clickerLoop() {
             }
             saveEconomy();
         }
-    }
-
-    // Sauvegarde périodique si changements non sauvegardés (ex: dégâts Boss)
-    if (hasUnsavedChanges) {
-        saveEconomy();
-        hasUnsavedChanges = false;
     }
 }
 
@@ -1466,257 +1427,6 @@ function restartCurrentLevel() {
 function openCustomMenu() {
     startMenu.classList.remove('active');
     customMenu.classList.add('active');
-}
-
-// --- FONCTIONS AUTHENTIFICATION ---
-function toggleAuthMenu() {
-    const authMenu = document.getElementById('authMenu');
-    if (authMenu.classList.contains('active')) {
-        authMenu.classList.remove('active');
-        // Clear inputs and errors
-        document.getElementById('authEmail').value = '';
-        document.getElementById('authPassword').value = '';
-        document.getElementById('authError').style.display = 'none';
-        startMenu.classList.add('active');
-    } else {
-        startMenu.classList.remove('active');
-        authMenu.classList.add('active');
-    }
-}
-
-function registerUser() {
-    if (!auth) {
-        alert("Erreur: Service d'authentification non disponible.");
-        return;
-    }
-    const email = document.getElementById('authEmail').value;
-    const password = document.getElementById('authPassword').value;
-    const errorDiv = document.getElementById('authError');
-
-    if(!email || !password) {
-        errorDiv.innerText = "Veuillez remplir tous les champs.";
-        errorDiv.style.display = 'block';
-        return;
-    }
-
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // Signed in
-            toggleAuthMenu();
-            spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "INSCRIPTION RÉUSSIE !", "#2ecc71");
-            playSound(sfxWin);
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            let errorMessage = error.message;
-            if (errorCode === 'auth/email-already-in-use') errorMessage = "Email déjà utilisé.";
-            if (errorCode === 'auth/invalid-email') errorMessage = "Email invalide.";
-            if (errorCode === 'auth/weak-password') errorMessage = "Mot de passe trop faible.";
-
-            errorDiv.innerText = errorMessage;
-            errorDiv.style.display = 'block';
-            playSound(sfxBowser);
-        });
-}
-
-function loginUser() {
-    if (!auth) {
-        alert("Erreur: Service d'authentification non disponible.");
-        return;
-    }
-    const email = document.getElementById('authEmail').value;
-    const password = document.getElementById('authPassword').value;
-    const errorDiv = document.getElementById('authError');
-
-    if(!email || !password) {
-        errorDiv.innerText = "Veuillez remplir tous les champs.";
-        errorDiv.style.display = 'block';
-        return;
-    }
-
-    auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // Signed in
-            toggleAuthMenu();
-            spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "CONNEXION RÉUSSIE !", "#2ecc71");
-            playSound(sfx1up);
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            let errorMessage = error.message;
-            if (errorCode === 'auth/user-not-found') errorMessage = "Utilisateur inconnu.";
-            if (errorCode === 'auth/wrong-password') errorMessage = "Mot de passe incorrect.";
-            if (errorCode === 'auth/invalid-email') errorMessage = "Email invalide.";
-
-            errorDiv.innerText = errorMessage;
-            errorDiv.style.display = 'block';
-            playSound(sfxBowser);
-        });
-}
-
-function logoutUser() {
-    if (!auth) return;
-    auth.signOut().then(() => {
-        spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "DÉCONNEXION...", "#ccc");
-        // Optional: Reset local data or keep it?
-        // For now, we keep local data to avoid data loss if sync isn't implemented.
-    }).catch((error) => {
-        console.error(error);
-    });
-}
-
-// --- CLOUD SAVE & LOAD ---
-async function saveToCloud() {
-    if (!auth || !auth.currentUser) return;
-
-    // Collecter les données à sauvegarder
-    const data = {
-        lastSave: firebase.firestore.FieldValue.serverTimestamp(),
-        totalCoins: Math.floor(totalCoins),
-        inventory: inventory,
-        clickerData: clickerData,
-        bossData: bossData,
-        warpZoneData: warpZoneData,
-        globalStats: globalStats,
-        unlockedCharacters: unlockedCharacters,
-        currentSkin: currentSkin,
-        // Sauvegarde des wins et scores via localStorage car stockés par clés individuelles
-        wins: {
-            easy: parseInt(localStorage.getItem('mario_wins_easy') || 0),
-            medium: parseInt(localStorage.getItem('mario_wins_medium') || 0),
-            hard: parseInt(localStorage.getItem('mario_wins_hard') || 0)
-        },
-        bestScores: {}
-    };
-
-    // Rassembler tous les meilleurs scores
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('mario_best_')) {
-            data.bestScores[key] = parseInt(localStorage.getItem(key) || 0);
-        }
-    });
-
-    try {
-        await db.collection('users').doc(auth.currentUser.uid).set(data, { merge: true });
-        console.log("☁️ Sauvegarde Cloud réussie.");
-    } catch (e) {
-        console.error("❌ Erreur sauvegarde Cloud:", e);
-    }
-}
-
-async function loadFromCloud() {
-    if (!auth || !auth.currentUser) return;
-
-    try {
-        const doc = await db.collection('users').doc(auth.currentUser.uid).get();
-        if (doc.exists) {
-            const data = doc.data();
-
-            // Restauration des variables
-            if (data.totalCoins !== undefined) totalCoins = data.totalCoins;
-            if (data.inventory) inventory = data.inventory;
-            if (data.clickerData) clickerData = data.clickerData;
-            if (data.bossData) bossData = data.bossData;
-            if (data.warpZoneData) warpZoneData = data.warpZoneData;
-            if (data.globalStats) globalStats = data.globalStats;
-            if (data.unlockedCharacters) unlockedCharacters = data.unlockedCharacters;
-            if (data.currentSkin) currentSkin = data.currentSkin;
-
-            // Restauration des Wins
-            if (data.wins) {
-                localStorage.setItem('mario_wins_easy', data.wins.easy || 0);
-                localStorage.setItem('mario_wins_medium', data.wins.medium || 0);
-                localStorage.setItem('mario_wins_hard', data.wins.hard || 0);
-            }
-
-            // Restauration des Scores
-            if (data.bestScores) {
-                for (const [key, val] of Object.entries(data.bestScores)) {
-                    localStorage.setItem(key, val);
-                }
-            }
-
-            // Mise à jour locale et UI
-            saveEconomy(); // Met à jour localStorage
-            saveGlobalStats();
-            localStorage.setItem('mario_album', JSON.stringify(unlockedCharacters));
-            localStorage.setItem('mario_skin', currentSkin);
-
-            updateWalletDisplay();
-            updateSkinLocks();
-
-            // Update affichage Best Score si nécessaire
-            if (typeof currentLevelKey !== 'undefined') {
-                const savedBest = localStorage.getItem(`mario_best_${currentLevelKey}`);
-                const bestDisplay = document.getElementById('bestScore');
-                if (bestDisplay) bestDisplay.innerText = savedBest ? savedBest : 0;
-            }
-
-            console.log("☁️ Chargement Cloud réussi.");
-            spawnFloatingText(window.innerWidth/2, window.innerHeight/2, "CLOUD SYNC OK !", "#00ffff");
-        } else {
-            console.log("☁️ Aucune donnée Cloud. Création...");
-            saveToCloud();
-        }
-    } catch (e) {
-        console.error("❌ Erreur chargement Cloud:", e);
-    }
-}
-
-// Auto-Save Loop (30 secondes)
-setInterval(() => {
-    // Sauvegarde locale de sécurité
-    saveEconomy();
-    // Sauvegarde Cloud si connecté
-    saveToCloud();
-}, 30000);
-
-// Observer l'état de connexion
-if (auth) {
-    auth.onAuthStateChanged((user) => {
-        const btnAuth = document.getElementById('btnAuth');
-        const statusDisplay = document.getElementById('authStatusDisplay');
-
-        if (user) {
-            // Chargement des données Cloud à la connexion
-            loadFromCloud();
-
-            // User is signed in
-            if(btnAuth) {
-                btnAuth.innerText = "DÉCONNEXION";
-                btnAuth.onclick = logoutUser;
-                btnAuth.style.background = "#e74c3c";
-                btnAuth.style.borderColor = "#c0392b";
-            }
-            if(statusDisplay) {
-                statusDisplay.innerText = `Connecté en tant que : ${user.email}`;
-                statusDisplay.style.color = "#2ecc71";
-            }
-        } else {
-            // User is signed out
-            if(btnAuth) {
-                btnAuth.innerText = "CONNEXION";
-                btnAuth.onclick = toggleAuthMenu;
-                btnAuth.style.background = "#3498db";
-                btnAuth.style.borderColor = "#2980b9";
-            }
-            if(statusDisplay) {
-                statusDisplay.innerText = "Non connecté";
-                statusDisplay.style.color = "#555";
-            }
-        }
-    });
-} else {
-    // Si auth n'est pas dispo, on cache le bouton ou on indique une erreur
-    const btnAuth = document.getElementById('btnAuth');
-    const statusDisplay = document.getElementById('authStatusDisplay');
-    if (statusDisplay) {
-        statusDisplay.innerText = "Mode hors ligne (Auth indisponible)";
-        statusDisplay.style.color = "#888";
-    }
-    if (btnAuth) {
-        btnAuth.style.display = 'none';
-    }
 }
 
 function openSkinMenu() {
@@ -3390,7 +3100,6 @@ function hitBoss() {
 
     // Dégâts (1 clic = 1 dégât pour l'instant)
     bossData.currentHp -= 1;
-    hasUnsavedChanges = true; // Marquer pour sauvegarde
 
     // Mise à jour visuelle immédiate
     updateBossUI();
@@ -3434,6 +3143,11 @@ function openWarpZoneMenu() {
     document.getElementById('warpZoneMenu').classList.add('active');
     updateWarpZoneUI();
 }
+
+    // Mise à jour UI Shop si actif (pour griser les boutons en temps réel)
+    if (document.getElementById('shopMenu') && document.getElementById('shopMenu').classList.contains('active')) {
+        updateShopUI();
+    }
 
 function updateWarpZoneUI() {
     updateWalletDisplay();
