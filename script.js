@@ -658,6 +658,7 @@ function goToMainMenu() {
     skinMenu.classList.remove('active');
     albumMenu.classList.remove('active');
     shopMenu.classList.remove('active');
+    document.getElementById('saveMenu').classList.remove('active');
 
     const statsMenu = document.getElementById('statsMenu');
     if (statsMenu) statsMenu.classList.remove('active');
