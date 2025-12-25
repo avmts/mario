@@ -15,6 +15,36 @@ const characterNames = [
 ];
 const allCharacters = characterNames.map(name => ({ name: name, img: `images/${name}.png` }));
 
+// --- PRÉCHARGEMENT DES IMAGES ---
+function preloadImages() {
+    // Préchargement des personnages
+    allCharacters.forEach(char => {
+        const img = new Image();
+        img.src = char.img;
+    });
+
+    // Préchargement des images d'interface importantes
+    const uiImages = [
+        'images/coin.png',
+        'images/block.png',
+        'images/pipe.png',
+        'images/toadshop.png',
+        'images/bowser.png' // Boss
+    ];
+    uiImages.forEach(src => {
+        const img = new Image();
+        img.src = src;
+    });
+    console.log("Images préchargées en arrière-plan.");
+}
+
+// Lancer le préchargement dès que possible
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', preloadImages);
+} else {
+    preloadImages();
+}
+
 // --- TRADUCTION DES NOMS (FRANÇAIS) ---
 const frenchNames = {
     'mario': "Mario", 'luigi': "Luigi", 'peach': "Princesse Peach",
