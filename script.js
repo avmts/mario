@@ -11,7 +11,7 @@ const characterNames = [
     // AJOUT DES BÉBÉS ICI
     'babywario', 'babypeach', 'babyluigi', 'babydaisy', 'babymario', 'babyharmony',
     // NOUVEL AJOUT
-    'goombette'
+    'goombette', 'shadowmario'
 ];
 const allCharacters = characterNames.map(name => ({ name: name, img: `images/${name}.png` }));
 
@@ -69,7 +69,8 @@ const frenchNames = {
     'babymario': "Bébé Mario",
     'babyharmony': "Bébé Harmonie",
     //NOUVEL AJOUT
-    'goombette': "Goombette"
+    'goombette': "Goombette",
+    'shadowmario': "Anti-Mario",
 };
 
 // --- DONNÉES DE L'ALBUM (BIO & EFFETS) ---
@@ -121,7 +122,8 @@ const ALBUM_DATA = {
     'babyluigi': { bio: "Luigi tout petit. Il est déjà très peureux même en couche !", effect: "Aucun effet spécial.", type: 'neutral' },
     'babydaisy': { bio: "La princesse Daisy bébé. Toujours aussi énergique !", effect: "Aucun effet spécial.", type: 'neutral' },
     'babymario': { bio: "Mario bébé. Il a vécu de grandes aventures sur le dos de Yoshi.", effect: "Aucun effet spécial.", type: 'neutral' },
-    'babyharmony': { bio: "La petite Harmonie avant qu'elle ne veille sur les étoiles.", effect: "Aucun effet spécial.", type: 'neutral' }
+    'babyharmony': { bio: "La petite Harmonie avant qu'elle ne veille sur les étoiles.", effect: "Aucun effet spécial.", type: 'neutral' },
+    'shadowmario': { bio: "Le doppelgänger aquatique de Mario, armé d'un pinceau magique. Il est en réalité Bowser Jr. déguisé, cherchant à salir la réputation du héros.", effect: "Aucun effet spécial.", type: 'neutral' }
 };
 
 // --- LISTE DES MUSIQUES ---
