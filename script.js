@@ -413,6 +413,7 @@ const descriptions = {
     'poison': { text: "PIÈGE : Renverse l'écran (Poison) !", type: "malus" },
     'shyguy': { text: "PIÈGE : Les cartes fuient la souris !", type: "malus" },
     'cherry': { text: "PIÈGE : Dédouble votre curseur !", type: "malus" },
+    'shadowmario': { text: "PIÈGE : Tache l'écran de peinture !", type: "malus" },
 
     'default': { text: "Personnage classique.", type: "neutral" }
 };
@@ -553,6 +554,7 @@ function clearAllEffects() {
     const msg = document.querySelector('.ghost-text');
     if (msg) msg.remove();
     document.querySelectorAll('.ink-spot').forEach(el => el.remove());
+        document.querySelectorAll('.paint-spot').forEach(el => el.remove());
 
     if (activeEffectsContainer) activeEffectsContainer.innerHTML = '';
 
@@ -1898,6 +1900,7 @@ function launchGameLogic() {
     const msg = document.querySelector('.ghost-text');
     if (msg) msg.remove();
     document.querySelectorAll('.ink-spot').forEach(el => el.remove());
+        document.querySelectorAll('.paint-spot').forEach(el => el.remove());
     if (activeEffectsContainer) activeEffectsContainer.innerHTML = '';
 
     let musicSrc = "";
@@ -2329,6 +2332,7 @@ function resetBoard() {
     }
     if (blooperMode === 2) {
         document.querySelectorAll('.ink-spot').forEach(el => el.remove());
+        document.querySelectorAll('.paint-spot').forEach(el => el.remove());
         const msg = document.querySelector('.ghost-text');
         if (msg) msg.remove();
         blooperMode = 0;
@@ -2339,6 +2343,7 @@ function resetBoard() {
     }
     if (shadowMode === 2) {
         document.querySelectorAll('.ink-spot').forEach(el => el.remove());
+        document.querySelectorAll('.paint-spot').forEach(el => el.remove());
         const msg = document.querySelector('.ghost-text');
         if (msg) msg.remove();
         shadowMode = 0;
@@ -3667,18 +3672,32 @@ function triggerShadowMarioEffect() {
 
     for (let i = 0; i < 20; i++) {
         const paint = document.createElement('div');
-        paint.classList.add('ink-spot');
+        paint.classList.add('paint-spot');
 
-        const size = Math.random() * 170 + 80;
+        const size = Math.random() * 250 + 100;
         paint.style.width = size + 'px';
         paint.style.height = size + 'px';
-        paint.style.left = Math.random() * 100 + 'vw';
-        paint.style.top = Math.random() * 100 + 'vh';
+        paint.style.left = (Math.random() * 100 - 10) + 'vw';
+        paint.style.top = (Math.random() * 100 - 10) + 'vh';
 
         // Jaune ou Orange
         const isYellow = Math.random() > 0.5;
-        const color = isYellow ? 'rgba(251, 208, 0, 0.9)' : 'rgba(255, 69, 0, 0.9)'; // FBD000 (Coin) or OrangeRed
-        paint.style.background = `radial-gradient(circle, ${color} 50%, transparent 100%)`;
+        const color = isYellow ? '#FBD000' : '#FF4500';
+        paint.style.backgroundColor = color;
+
+        // Forme irrégulière
+        const br1 = Math.floor(Math.random() * 40 + 30);
+        const br2 = Math.floor(Math.random() * 40 + 30);
+        const br3 = Math.floor(Math.random() * 40 + 30);
+        const br4 = Math.floor(Math.random() * 40 + 30);
+        const br5 = Math.floor(Math.random() * 40 + 30);
+        const br6 = Math.floor(Math.random() * 40 + 30);
+        const br7 = Math.floor(Math.random() * 40 + 30);
+        const br8 = Math.floor(Math.random() * 40 + 30);
+        paint.style.borderRadius = `${br1}% ${br2}% ${br3}% ${br4}% / ${br5}% ${br6}% ${br7}% ${br8}%`;
+
+        const rotation = Math.random() * 360 + 'deg';
+        paint.style.setProperty('--rotation', rotation);
 
         document.body.appendChild(paint);
     }
