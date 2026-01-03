@@ -123,7 +123,7 @@ const ALBUM_DATA = {
     'babydaisy': { bio: "La princesse Daisy bébé. Toujours aussi énergique !", effect: "Aucun effet spécial.", type: 'neutral' },
     'babymario': { bio: "Mario bébé. Il a vécu de grandes aventures sur le dos de Yoshi.", effect: "Aucun effet spécial.", type: 'neutral' },
     'babyharmony': { bio: "La petite Harmonie avant qu'elle ne veille sur les étoiles.", effect: "Aucun effet spécial.", type: 'neutral' },
-    'shadowmario': { bio: "Le doppelgänger aquatique de Mario, armé d'un pinceau magique. Il est en réalité Bowser Jr. déguisé, cherchant à salir la réputation du héros.", effect: "Aucun effet spécial.", type: 'neutral' }
+    'shadowmario': { bio: "Le doppelgänger aquatique de Mario, armé d'un pinceau magique. Il est en réalité Bowser Jr. déguisé, cherchant à salir la réputation du héros.", effect: "PIÈGE : Tache l'écran de peinture !", type: 'malus' }
 };
 
 // --- LISTE DES MUSIQUES ---
@@ -243,6 +243,7 @@ let isGameOver = false;
 let isBowserActive = false;
 let ghostMode = 0;
 let blooperMode = 0;
+let shadowMode = 0;
 let isIceActive = false;
 let isChompActive = false;
 let isTinyMode = false;
@@ -319,7 +320,7 @@ let warpZoneData = JSON.parse(localStorage.getItem('mario_warp_zone')) || {
 const BOSS_CHARACTERS = ['bowser', 'ghost', 'blooper', 'kamek', 'bobomb', 'iceflower', 'chainchomp', 'lightning', 'poison', 'shyguy', 'cherry'];
 
 // --- STATISTIQUES GLOBALES ---
-let globalStats = JSON.parse(localStorage.getItem('mario_global_stats')) || {
+var globalStats = JSON.parse(localStorage.getItem('mario_global_stats')) || {
     totalTimePlayed: 0, // secondes
     totalFlips: 0,
     trapsTriggered: {},
@@ -558,6 +559,7 @@ function clearAllEffects() {
     isBowserActive = false;
     ghostMode = 0;
     blooperMode = 0;
+    shadowMode = 0;
     isIceActive = false;
     isChompActive = false;
     isTinyMode = false;
@@ -1882,6 +1884,7 @@ function launchGameLogic() {
     isBowserActive = false;
     ghostMode = 0;
     blooperMode = 0;
+    shadowMode = 0;
     isIceActive = false;
     isChompActive = false;
     isTinyMode = false;
@@ -2183,6 +2186,7 @@ function disableCards() {
     if (firstCard.dataset.name === 'poison' && !isGameWon) triggerPoisonEffect();
     if (firstCard.dataset.name === 'shyguy' && !isGameWon) triggerShyGuyEffect();
     if (firstCard.dataset.name === 'cherry' && !isGameWon) triggerCherryEffect();
+    if (firstCard.dataset.name === 'shadowmario' && !isGameWon) triggerShadowMarioEffect();
     timeLeft += 5;
     timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
     if (timeLeft > 10) {
@@ -2328,9 +2332,19 @@ function resetBoard() {
         const msg = document.querySelector('.ghost-text');
         if (msg) msg.remove();
         blooperMode = 0;
+    shadowMode = 0;
     }
     else if (blooperMode === 1) {
         blooperMode = 2;
+    }
+    if (shadowMode === 2) {
+        document.querySelectorAll('.ink-spot').forEach(el => el.remove());
+        const msg = document.querySelector('.ghost-text');
+        if (msg) msg.remove();
+        shadowMode = 0;
+    }
+    else if (shadowMode === 1) {
+        shadowMode = 2;
     }
 }
 
@@ -3644,4 +3658,36 @@ function importSaveCode() {
         alert("Erreur : Le code de sauvegarde est invalide ou corrompu.");
         console.error(e);
     }
+}
+
+function triggerShadowMarioEffect() {
+    trackTrap('shadowmario');
+    shadowMode = 1;
+    playSound(document.getElementById('sfxSplat'));
+
+    for (let i = 0; i < 20; i++) {
+        const paint = document.createElement('div');
+        paint.classList.add('ink-spot');
+
+        const size = Math.random() * 170 + 80;
+        paint.style.width = size + 'px';
+        paint.style.height = size + 'px';
+        paint.style.left = Math.random() * 100 + 'vw';
+        paint.style.top = Math.random() * 100 + 'vh';
+
+        // Jaune ou Orange
+        const isYellow = Math.random() > 0.5;
+        const color = isYellow ? 'rgba(251, 208, 0, 0.9)' : 'rgba(255, 69, 0, 0.9)'; // FBD000 (Coin) or OrangeRed
+        paint.style.background = `radial-gradient(circle, ${color} 50%, transparent 100%)`;
+
+        document.body.appendChild(paint);
+    }
+
+    const msg = document.createElement('div');
+    msg.classList.add('ghost-text');
+    msg.innerText = "GRAFFITI !";
+    msg.style.zIndex = "3001";
+    msg.style.color = "#FBD000";
+    msg.style.textShadow = "2px 2px 0 #FF4500";
+    document.body.appendChild(msg);
 }
